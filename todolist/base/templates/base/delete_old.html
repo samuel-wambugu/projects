@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div>
+    <p>
+        are sure you want to delete "{{del.description}}"
+    </p>
+    <form action="" method="post">
+        {% csrf_token %}
+        <button type="submit">delete</button>
+        <div><a href="{% url 'task_details' del.id %}">No</a><div>
+    </form>
+</div>
+
+{% endblock content %}
