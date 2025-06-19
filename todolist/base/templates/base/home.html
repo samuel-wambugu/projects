@@ -1,0 +1,38 @@
+
+
+{% extends 'main.html' %}
+
+
+
+{% block content %}
+<body>
+
+    <div class="body-container-user">
+        <div class="home-page">
+            <div class="welcome-div">
+            <p class="animated-text" >
+                Hello and welcome!  
+                Start your journey to better productivity.
+                Everything you need, all in one place.  
+                Your personal space to manage what matters most.
+             </p>
+        </div>
+        <div class="login-div">
+              <div>
+                <a href="{% url 'loginpage' %}"> login </a>
+              </div>
+              <div>
+                <a href="{% url 'create_account' %}"> sign up</a>
+              </div>
+                
+        </div>
+        </div>
+       
+    </div>
+  
+
+
+
+  
+</body>
+{% endblock content %}

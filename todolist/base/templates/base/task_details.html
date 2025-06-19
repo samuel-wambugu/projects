@@ -1,0 +1,30 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<body>
+
+    <div class="details_body">
+        <div class="Task_header">
+            <p>Task Details</p>
+        </div>
+        <hr>
+        <div class="details">
+            <h1>{{tasks.description}}</h1>
+            <p>due to : {{tasks.due_date | timesince}}</p>
+            <p>create: {{tasks.created_at | timesince}} ago</p>
+            <p>{{tasks.categories}}</p>
+        </div>
+        <hr>
+        <div class="details-links-fuctions">
+            <a href="{% url 'userpage' %}">Go back</a>
+            <a href="{% url 'delete_task' tasks.id %}">delete</a>
+            <a href="{% url 'edit_task' tasks.id  %}">edit</a>
+        </div>
+
+    </div>
+
+    
+    
+</body>
+{% endblock content %}
