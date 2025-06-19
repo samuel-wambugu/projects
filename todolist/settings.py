@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-tuop@(_el&nd&xr@b(e4lj7oqe3g+3f*jnbag^!7gs-)(1dau=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['base.onrender.com']
+ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')]
 
   
 
