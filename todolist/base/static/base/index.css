@@ -1,0 +1,558 @@
+body{
+    background-color: aquamarine;
+    padding: 0;
+    margin: 0;
+}
+
+.body-container-user {
+  min-height: 100vh;
+  width: 100%;
+  background-image: url('../base/images/people.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+
+.home-page {
+  width: 100%;
+  max-width: 1000px;
+  background-color: rgba(0, 0, 0, 0.65);
+  padding: 40px 20px;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  overflow: auto;
+  max-height: 100vh;
+}
+
+
+.welcome-div p {
+  font-size: 50px;
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.login-div {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.login-div a {
+  text-decoration: none;
+  color: white;
+  background-color: #007bff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.login-div a:hover {
+  background-color: #0056b3;
+}
+
+
+.details_body {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px 40px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+.Task_header p {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+
+.details p {
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 20px 0;
+}
+
+
+.details-links-fuctions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.details-links-fuctions a {
+  flex: 1;
+  padding: 10px 18px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.details-links-fuctions a:hover {
+  background-color: #0056b3;
+}
+
+
+.deletemodal {
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 25px 30px;
+  background-color: #fff3f3;
+  border: 2px solid #ffcccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.1);
+}
+
+
+.delete_header p {
+  color: #d10000;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+.delete_details {
+  text-align: center;
+  margin: 15px 0;
+}
+
+.delete_details p {
+  margin: 5px 0;
+}
+
+
+.delete_form {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.delete_form button {
+  padding: 10px 16px;
+  background-color: #d10000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete_form button:hover {
+  background-color: #a80000;
+}
+
+.delete_form a {
+  text-decoration: none;
+  padding: 10px 16px;
+  background-color: #888;
+  color: white;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.delete_form a:hover {
+  background-color: #555;
+}
+
+.body-container {
+  max-width: 600px;
+  margin: 50px auto;
+  background-color: rgb(52, 241, 232);
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+
+.welcome-message {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.welcome-message p {
+  margin: 0;
+  font-weight: bold;
+  color: #007bff;
+  font-size: 25px;
+}
+
+
+.body-container > div:nth-child(2) {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.body-container a {
+  text-decoration: none;
+  font-weight: 600;
+  color: #007bff;
+  padding: 10px 18px;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.body-container a:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.new_task{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+.task-div ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-div li {
+  background-color: #f1f3f6;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.task-div li:hover {
+  background-color: #e1e7f0;
+}
+
+.task-div a {
+  text-decoration: none;
+  color: #333;
+  font-size: 15px;
+  display: flex;
+}
+
+
+.create_task {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.create_task_div {
+  background-color: rgb(52, 241, 232);
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+
+.header_task h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.create_task_details form {
+  display: flex;
+  flex-direction: column;
+}
+
+.create_task_details label {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: 600;
+}
+
+.create_task_details input,
+.create_task_details select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.create_task_details input:focus,
+.create_task_details select:focus {
+  border-color: #007bff;
+}
+
+.task_button {
+  margin-top: 25px;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.task_button:hover {
+  background-color: #0056b3;
+}
+
+
+.loginmodal,
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; 
+  overflow-y: auto; 
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.login-divi,
+.signup-div {
+  background-color: rgb(52, 241, 232);;
+  padding: 40px 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+
+.header-div{
+    display:flex;
+}
+
+.login-header-div h1,
+.header-div h1 {
+  text-align: center;
+  font-size: 28px;
+  color: #007bff;
+  margin-bottom: 30px;
+   display:flex;
+}
+
+.form-div {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-div label {
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.form-div input {
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 15px;
+  display: flex;
+}
+
+.form-div input:focus {
+  border-color: #007bff;
+}
+
+.sigupbtn-div {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.sigupbtn-div button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sigupbtn-div button:hover {
+  background-color: #0056b3;
+}
+.notsign{
+    display:flex;
+    flex-direction: column;
+
+}
+
+.login-divi > div:last-child,
+.signup-div > div:last-child {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.login-divi a,
+.signup-div a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-divi a:hover,
+.signup-div a:hover {
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 400px) {
+    .new_task{
+        flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 500px) {
+  
+
+  .sigupbtn-div button {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .loginmodal,
+  .modal {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .login-divi,
+  .signup-div {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    padding: 20px;
+    box-shadow: none;
+    overflow-y: auto;           
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  
+  }
+
+  .form-div {
+    flex: 1;                      
+    display: flex;
+    flex-direction: column; 
+  }
+
+  .sigupbtn-div {
+    margin-top: 10px;            
+  }
+
+  .welcome-div p {
+    font-size: 32px;
+  }
+
+  .login-div {
+    flex-direction: column;
+    width: 100%;
+  }
+  .login-div div{
+    margin-bottom: 10px;
+  }
+
+  .login-div a {
+    width: 100%;
+    text-align: center;
+  }
+
+  .home-page {
+    padding: 30px 15px;
+    max-height: none;
+  }
+}
+
+
+
+@media screen and (max-width: 600px) {
+
+  .details_body,
+  .deletemodal {
+    width: 90%;
+    padding: 20px;
+    margin: 20px auto;
+  }
+
+  .Task_header p {
+    font-size: 20px;
+  }
+
+  .details p {
+    font-size: 14px;
+  }
+
+  .details-links-fuctions {
+    flex-direction: column;
+  }
+
+  .details-links-fuctions a {
+    width: 100%;
+  }
+
+  .delete_form {
+    flex-direction: column;
+  }
+
+  .delete_form button,
+  .delete_form a {
+    width: 100%;
+    text-align: center;
+  }
+
+  .body-container {
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .task-div li {
+    font-size: 14px;
+  }
+}
+
