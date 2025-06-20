@@ -466,7 +466,7 @@ hr {
   .login-divi,
   .signup-div {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     border-radius: 0;
     padding: 20px;
     box-shadow: none;
