@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import  login_required
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
 
 
 
@@ -81,20 +81,29 @@ def edit_task(request, pk):
 
 
 def create_account(request):
-    form = customizedUserCreationForm()
-
+    
     if request.method == 'POST': 
-        form = customizedUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
+        username = request.POST.get('username').lower()
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm = request.POST.get('confirmpassword')
+        if password != confirm:
+            messages.error(request, "the password doesnot match")
+        elif User.objects.filter(username = username).exists():
+            messages.error(request,"user already exist")
+        elif User.objects.filter(email= email).exists():
+            messages.error(request, "the email already exist")
+        else:
+            user = User.objects.create(
+                username=username,
+                email=email,
+                password=make_password(password),
+            )
             login(request, user)
             return redirect('userpage')
-        else:
-            messages.error(request, 'an error occured during registration')
 
-    return render(request, 'base/create_account.html',{'form':form})
+
+    return render(request, 'base/create_account.html')
 
 
 def loginAccount(request):
