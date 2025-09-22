@@ -1,0 +1,29 @@
+# Media files
+media/images/*
+media/videos/*
+!media/images/.gitkeep
+!media/videos/.gitkeep
+
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# Virtual Environment
+brayo/
+*.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
