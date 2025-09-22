@@ -1,0 +1,66 @@
+{% extends 'main.html' %}
+
+    {% block content %}
+    {% if request.user.is_superuser %}
+    <h1>
+        hello {{ request.user.fullname }}, welcome to your dashboard
+
+        <div>
+            <div class="head">
+                <h1> upload video here</h1>
+                <input type="text" name="title" id="title" placeholder="enter the title here">
+                <input type="file" name="video" id="videoInput" accept="video/*"><br><br>
+                <button onclick="preview()">preview</button>
+                <button onclick="uploadVideo()">upload</button>
+                <button onclick="deletePreview()">discard</button>
+            </div>
+
+            <form action="{% url 'upload_thumbnail' %}" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+
+                <input type="file" name="images" accept="image/*" id="">
+                <button type="submit">upload</button>
+            </form>
+            <h3>
+                Preview the video:
+
+                <video id="videoPreview" width="400" controls></video>
+            </h3>
+        </div>
+    </h1>
+
+    <a href="{% url 'logout' %}">
+        <button type="button">logout</button>
+    </a>
+    {% else %}
+    <h1>
+        hello {{request.user.fullname}} ,welcome to your dashboard
+    </h1>
+    {% for video in video %}
+    <div>
+        <div>
+            <video id="videoPreview" width="600" controls poster="{{video.images.url}}" >
+                <source src="{{video.videos.url}}" ></video>
+        </div>
+        <div>
+            <h1>
+                {{video.title}}
+            </h1>
+        </div>
+    </div>
+    
+
+    {% endfor %}
+
+    <a href="{% url 'logout' %}">
+        <button type="button">logout</button>
+    </a>
+    {% endif %}
+
+    {% endblock content %}
+
+    
+    
+    
+</body>
+</html>

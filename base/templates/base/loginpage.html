@@ -1,0 +1,64 @@
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% if page == 'login' %}
+    <div>
+        <h1>
+            login
+        </h1>
+
+        <form action="" method="post">
+            {% csrf_token %} 
+            
+            <label for="Email">Email</label>
+            <input type="email" name="Email" id="Email" placeholder="Email">
+            <label for="Password">Password</label>
+            <input type="Password" name="Password" id="Password" placeholder="Password">
+            <p>if you haven't signup <a href="{% url 'register' %}">signup</a></p>
+            <button type="submit">login</button>
+
+        </form>
+
+    </div>
+    {% else %}
+    
+    <div>
+        <div>
+            Register
+        </div>
+        <form action="" method="post">
+                {% csrf_token %} 
+
+            <label for="fullname">fullname</label>
+            <input type="text" name="fullname" id="fullname" placeholder="fullname">
+
+            <label for="Email">Email</label>
+            <input type="email" name="Email" id="Email" placeholder="Email">
+
+            <label for="Contact">Phone number</label>
+            <input type="number" name="Contact" id="Contact" placeholder="+254712334522">
+
+            <label for="Password">Password</label>
+            <input type="Password" name="Password" id="Password" placeholder="Password">
+
+            <label for="Password1">Confirm Password</label>
+            <input type="Password" name="Password1" id="Password1" placeholder="Password1">
+                <p>if you have already signup <a href="{% url 'login' %}">login</a></p>
+                
+                <button type="submit">signup</button>
+
+
+        </form>
+    </div>
+    {% endif %}
+    
+</body>
+</html>
+
+{% endblock content %}
