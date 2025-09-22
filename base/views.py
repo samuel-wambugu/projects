@@ -66,9 +66,9 @@ def register(request):
         if password != password1:
             messages.error(request, 'the password doesnot match')
         elif CustomUser.objects.filter(email=email).exists():
-            messages.error(request, 'the user already exist')
+            messages.error(request, 'Email already exists')
         elif CustomUser.objects.filter(phonenumber=contact).exists():
-            messages.error(request, 'the contact already exist')
+            messages.error(request, 'Phone number already exists')
         else:
             user = CustomUser.objects.create_user(
                 fullname=fullname,
@@ -85,16 +85,27 @@ def register(request):
 
 @csrf_exempt
 def upload_video(request):
-    if request.method == "POST" and request.FILES.get("video"):
+    if request.method == "POST" and request.FILES.get("videos"):
         title = request.POST.get("title", "Untitled")
-        video_file = request.FILES["video"]
+        video_file = request.FILES["videos"]
+        thumbnail_id = request.POST.get("images")
+        bio = request.POST.get("bio", "")
 
-        video = MediaFiles.objects.create(title=title, videos=video_file)
-        return JsonResponse({
-            "message": "Video uploaded successfully!",
-            "video_url" : video.videos.url,
-            "title" : video.title
-        })
+        try:
+            thumbnail = Thumbnail.objects.get(id=thumbnail_id)
+            video = MediaFiles.objects.create(
+                title=title, 
+                videos=video_file,
+                images=thumbnail,
+                bio=bio
+            )
+            return JsonResponse({
+                "message": "Video uploaded successfully!",
+                "video_url": video.videos.url,
+                "title": video.title
+            })
+        except Thumbnail.DoesNotExist:
+            return JsonResponse({"error": "Invalid thumbnail ID"}, status=400)
     
     return JsonResponse({"error": "Invalid request"}, status=400)
 
