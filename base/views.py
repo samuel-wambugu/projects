@@ -23,21 +23,29 @@ def loginfunc(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        email = request.POST.get('Email').lower()
-        password = request.POST.get('Password')
+        email = request.POST.get('Email', '').lower().strip()
+        password = request.POST.get('Password', '')
 
-        
-        
+        if not email or not password:
+            messages.error(request, "Please provide both email and password")
+            return render(request, 'base/loginpage.html', {'page': page})
+
+        # Check if user exists first
+        if not CustomUser.objects.filter(email=email).exists():
+            messages.error(request, "No account found with this email")
+            return render(request, 'base/loginpage.html', {'page': page})
+            
         user = authenticate(request, username=email, password=password)
 
-    
-
         if user is not None:
-            login(request, user)
-            return redirect('dashboard')
+            if user.is_active:
+                login(request, user)
+                next_url = request.GET.get('next', 'dashboard')
+                return redirect(next_url)
+            else:
+                messages.error(request, "This account is inactive")
         else:
-            messages.error(request, "username or password doesn't exist")
-    
+            messages.error(request, "Invalid password")
 
 
     return render(request, 'base/loginpage.html', {'page':page})
