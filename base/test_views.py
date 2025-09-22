@@ -8,6 +8,32 @@ from django.contrib.messages import get_messages
 class ViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
+        
+        # Create test video file with proper content
+        video_file = SimpleUploadedFile(
+            name='test_video.mp4',
+            content=b'file_content',
+            content_type='video/mp4'
+        )
+        
+        response = self.client.post(
+            self.upload_video_url,
+            {
+                'title': 'Test Video',
+                'video': video_file  # Make sure field name matches view
+            },
+            format='multipart'  # Ensure proper multipart form data
+        )
+        
+        self.assertEqual(response.status_code, 200, 
+                        f"Expected 200 status code, got {response.status_code}. "
+                        f"Response content: {response.content.decode()}")
+from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
+
+class ViewsTest(TestCase):
+    def setUp(self):
+        self.client = Client()
         # Set up URLs
         self.login_url = reverse('login')
         self.dashboard_url = reverse('dashboard')
@@ -174,13 +200,42 @@ class ViewsTest(TestCase):
 
     def test_upload_video(self):
         """Test video upload functionality"""
-        self.client.login(username='test@example.com', password='testpass123')
-        response = self.client.post(self.upload_video_url, {
+        self.client.login(username='testuser@example.com', password=self.user_password)
+        
+        # Create a thumbnail first since it's required
+        thumbnail = Thumbnail.objects.create(
+            cover=SimpleUploadedFile(
+                name='test_thumb.jpg',
+                content=b'file_content',
+                content_type='image/jpeg'
+            )
+        )
+        
+        # Create test video file
+        video_file = SimpleUploadedFile(
+            name='test_video.mp4',
+            content=b'file_content',
+            content_type='video/mp4'
+        )
+        
+        # Upload the video
+        data = {
             'title': 'Test Video',
-            'video': self.video_file
-        })
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(MediaFiles.objects.filter(title='Test Video').exists())
+            'video': video_file,
+            'images': thumbnail.id
+        }
+        response = self.client.post(self.upload_video_url, data)
+        
+        # Check response and database
+        self.assertEqual(response.status_code, 200, 
+                        f"Response status: {response.status_code}, "
+                        f"Content: {response.content.decode()}")
+        
+        # Verify video was created
+        self.assertTrue(
+            MediaFiles.objects.filter(title='Test Video').exists(),
+            "Video was not created in database"
+        )
 
     def test_upload_thumbnail(self):
         """Test thumbnail upload functionality"""

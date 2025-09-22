@@ -85,26 +85,24 @@ def register(request):
 
 @csrf_exempt
 def upload_video(request):
-    if request.method == "POST" and request.FILES.get("videos"):
+    if request.method == "POST" and request.FILES.get("video"):
         title = request.POST.get("title", "Untitled")
-        video_file = request.FILES["videos"]
+        video_file = request.FILES["video"]
         thumbnail_id = request.POST.get("images")
-        bio = request.POST.get("bio", "")
-
+        
         try:
-            thumbnail = Thumbnail.objects.get(id=thumbnail_id)
+            thumbnail = Thumbnail.objects.get(id=thumbnail_id) if thumbnail_id else None
             video = MediaFiles.objects.create(
-                title=title, 
+                title=title,
                 videos=video_file,
-                images=thumbnail,
-                bio=bio
+                images=thumbnail
             )
             return JsonResponse({
                 "message": "Video uploaded successfully!",
                 "video_url": video.videos.url,
                 "title": video.title
             })
-        except Thumbnail.DoesNotExist:
+        except (Thumbnail.DoesNotExist, ValueError):
             return JsonResponse({"error": "Invalid thumbnail ID"}, status=400)
     
     return JsonResponse({"error": "Invalid request"}, status=400)
