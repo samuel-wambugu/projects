@@ -1,0 +1,233 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="position-relative overflow-hidden">
+    <div class="position-absolute w-100 h-100" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); opacity: 0.1;"></div>
+    <div class="container py-5">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="display-3 fw-bold mb-4 text-gradient">
+                    Master Forex Trading
+                </h1>
+                <p class="lead mb-4 text-dark">
+                    Join our community of successful traders. Learn proven strategies, 
+                    access real-time market data, and transform your trading journey.
+                </p>
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-rocket me-2"></i>Get Started
+                    </a>
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="fas fa-crown me-2"></i>View Plans
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{% static 'images/trading-hero.svg' %}" alt="Trading" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Why Choose Us?</h2>
+        <p class="lead text-muted">Everything you need to succeed in forex trading</p>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 mb-4 mx-auto" style="width: fit-content;">
+                        <i class="fas fa-graduation-cap fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Expert Tutorials</h3>
+                    <p class="text-muted mb-0">
+                        Learn from structured tutorials covering everything from basic concepts 
+                        to advanced trading strategies.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 mb-4 mx-auto" style="width: fit-content;">
+                        <i class="fas fa-chart-line fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Live Market Data</h3>
+                    <p class="text-muted mb-0">
+                        Access real-time forex charts and market analysis to make 
+                        informed trading decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 mb-4 mx-auto" style="width: fit-content;">
+                        <i class="fas fa-trophy fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Track Progress</h3>
+                    <p class="text-muted mb-0">
+                        Monitor your learning journey, earn certificates, and 
+                        celebrate your trading milestones.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="row justify-content-center text-center mb-5">
+        <div class="col-md-4">
+            <div class="display-4 fw-bold text-primary mb-2">500+</div>
+            <p class="text-muted">Active Traders</p>
+        </div>
+        <div class="col-md-4">
+            <div class="display-4 fw-bold text-primary mb-2">50+</div>
+            <p class="text-muted">Expert Tutorials</p>
+        </div>
+        <div class="col-md-4">
+            <div class="display-4 fw-bold text-primary mb-2">24/7</div>
+            <p class="text-muted">Market Access</p>
+        </div>
+    </div>
+
+    <!-- Featured Tutorials -->
+    {% if featured_tutorials %}
+    <div class="py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Featured Tutorials</h2>
+            <p class="lead text-muted">Start with our most popular trading lessons</p>
+        </div>
+
+        <div class="row g-4">
+            {% for tutorial in featured_tutorials %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if tutorial.thumbnail %}
+                        <img src="{{ tutorial.thumbnail.url }}" class="card-img-top" alt="{{ tutorial.title }}"
+                             style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary">{{ tutorial.get_level_display }}</span>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>{{ tutorial.duration|default:'30 mins' }}
+                            </small>
+                        </div>
+                        <h5 class="card-title h4">{{ tutorial.title }}</h5>
+                        <p class="card-text text-muted">{{ tutorial.description|truncatewords:20 }}</p>
+                        <a href="{% url 'tutorial_detail' tutorial.pk %}" class="btn btn-outline-primary stretched-link">
+                            <i class="fas fa-play-circle me-2"></i>Start Learning
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CTA Section -->
+    <div class="bg-primary bg-opacity-10 rounded-3 p-5 text-center mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-4">Ready to Start Your Trading Journey?</h2>
+                <p class="lead mb-4">
+                    Join our community of successful traders and start learning today. 
+                    Get access to all our premium features with a 7-day free trial.
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up Now
+                    </a>
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="fas fa-info-circle me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials Section -->
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">What Our Traders Say</h2>
+        <p class="lead text-muted">Success stories from our community</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <p class="card-text mb-4">"The tutorials are comprehensive and easy to follow. I've learned more in a month than I did in a year of self-study."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary text-white p-3 me-3">JD</div>
+                        <div>
+                            <h6 class="mb-0">John Doe</h6>
+                            <small class="text-muted">Forex Trader</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <p class="card-text mb-4">"The live market data and analysis tools have completely transformed my trading strategy. Highly recommended!"</p>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary text-white p-3 me-3">JS</div>
+                        <div>
+                            <h6 class="mb-0">Jane Smith</h6>
+                            <small class="text-muted">Professional Trader</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <p class="card-text mb-4">"The community support and expert guidance have been invaluable. I'm now trading with confidence and seeing results."</p>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary text-white p-3 me-3">MB</div>
+                        <div>
+                            <h6 class="mb-0">Mike Brown</h6>
+                            <small class="text-muted">Day Trader</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

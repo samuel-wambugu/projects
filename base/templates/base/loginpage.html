@@ -1,64 +1,134 @@
+{% extends 'main.html' %}
+{% load static %}
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    {% if page == 'login' %}
-    <div>
-        <h1>
-            login
-        </h1>
+<div class="min-vh-100 d-flex align-items-center py-5" style="background-color: var(--background-color);">
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                {% if page == 'login' %}
+                <div class="card-body ">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                        </div>
+                        <h2 class="card-title fw-bold text-dark">Welcome Back!</h2>
+                        <p class="text-muted">Please login to continue</p>
+                    </div>
 
-        <form action="" method="post">
-            {% csrf_token %} 
-            
-            <label for="Email">Email</label>
-            <input type="email" name="Email" id="Email" placeholder="Email">
-            <label for="Password">Password</label>
-            <input type="Password" name="Password" id="Password" placeholder="Password">
-            <p>if you haven't signup <a href="{% url 'register' %}">signup</a></p>
-            <button type="submit">login</button>
+                    <form action="" method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" name="Email" id="Email" 
+                                       placeholder="Enter your email" required>
+                            </div>
+                        </div>
 
-        </form>
+                        <div class="mb-4">
+                            <label for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" name="Password" id="Password" 
+                                       placeholder="Enter your password" required>
+                            </div>
+                        </div>
 
-    </div>
-    {% else %}
-    
-    <div>
-        <div>
-            Register
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </div>
+
+                        <p class="text-center mt-4">
+                            Don't have an account? 
+                            <a href="{% url 'register' %}" class="text-primary">Sign up</a>
+                        </p>
+                    </form>
+                </div>
+
+                {% else %}
+
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                            <i class="fas fa-user-plus fa-3x text-primary"></i>
+                        </div>
+                        <h2 class="card-title fw-bold text-dark">Create Account</h2>
+                        <p class="text-muted">Join our trading community</p>
+                    </div>
+
+                    <form action="" method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" name="fullname" id="fullname" 
+                                       placeholder="Enter your full name" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" name="Email" id="Email" 
+                                       placeholder="Enter your email" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Contact" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" class="form-control" name="Contact" id="Contact" 
+                                       placeholder="+254 712 334 522" pattern="[0-9+\s]+" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" name="Password" id="Password" 
+                                       placeholder="Create a password" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="Password1" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" name="Password1" id="Password1" 
+                                       placeholder="Confirm your password" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Sign Up
+                            </button>
+                        </div>
+
+                        <p class="text-center mt-4">
+                            Already have an account? 
+                            <a href="{% url 'login' %}" class="text-primary">Login</a>
+                        </p>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        <form action="" method="post">
-                {% csrf_token %} 
-
-            <label for="fullname">fullname</label>
-            <input type="text" name="fullname" id="fullname" placeholder="fullname">
-
-            <label for="Email">Email</label>
-            <input type="email" name="Email" id="Email" placeholder="Email">
-
-            <label for="Contact">Phone number</label>
-            <input type="number" name="Contact" id="Contact" placeholder="+254712334522">
-
-            <label for="Password">Password</label>
-            <input type="Password" name="Password" id="Password" placeholder="Password">
-
-            <label for="Password1">Confirm Password</label>
-            <input type="Password" name="Password1" id="Password1" placeholder="Password1">
-                <p>if you have already signup <a href="{% url 'login' %}">login</a></p>
-                
-                <button type="submit">signup</button>
-
-
-        </form>
     </div>
-    {% endif %}
-    
-</body>
-</html>
+</div>
 
-{% endblock content %}
+<!-- Add a decorative background -->
+<div class="position-fixed top-0 start-0 w-100 h-100" 
+     style=" z-index: -1; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);"></div>
+{% endblock%}

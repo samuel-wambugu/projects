@@ -5,16 +5,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="{% static 'css/style.css' %}"> -->
-    <title>Brayo website</title>
-</head>
-<body>
-    {% block content %}
-
+    <meta name="description" content="Learn forex trading with expert tutorials, real-time market data, and comprehensive training resources.">
+    <title>{% block title %}Forex Trading Academy{% endblock %}</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
 
-    {% endblock content %}
+    <!-- Messages -->
+    <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x mt-4" style="z-index: 1050;">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="d-flex align-items-center">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle me-2"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% elif message.tags == 'info' %}
+                        <i class="fas fa-info-circle me-2"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 
-    <script src="{%static 'js/static.js'%}"></script>
+    <!-- Main Content -->
+    <main class="flex-grow-1">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-5 bg-light">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-chart-line me-2"></i>Forex Trading Academy
+                        </h5>
+                        <p class="text-muted mb-3">
+                            Your journey to becoming a successful forex trader starts here. 
+                            Expert tutorials, real-time data, and community support.
+                        </p>
+                        <div class="d-flex gap-3">
+                            <a href="#" class="text-muted">
+                                <i class="fab fa-facebook-f fa-lg"></i>
+                            </a>
+                            <a href="#" class="text-muted">
+                                <i class="fab fa-twitter fa-lg"></i>
+                            </a>
+                            <a href="#" class="text-muted">
+                                <i class="fab fa-instagram fa-lg"></i>
+                            </a>
+                            <a href="#" class="text-muted">
+                                <i class="fab fa-linkedin-in fa-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-dark mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'home' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'tutorial_list' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Tutorials
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'forex_dashboard' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Forex Charts
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'subscription_plans' %}" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Plans
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-dark mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="#" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Help Center
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>FAQ
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Contact Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-muted text-decoration-none">
+                                <i class="fas fa-chevron-right me-1"></i>Terms of Service
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-dark mb-3">Contact Info</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <i class="fas fa-envelope text-primary me-3"></i>
+                                <div class="text-muted">support@forexacademy.com</div>
+                            </div>
+                        </li>
+                        <li class="mb-3">
+                            <div class="d-flex">
+                                <i class="fas fa-phone text-primary me-3"></i>
+                                <div class="text-muted">+254 700 000 000</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="d-flex">
+                                <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                                <div class="text-muted">Nairobi, Kenya</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="small text-muted mb-0">
+                        &copy; {% now "Y" %} Forex Trading Academy. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end gap-3">
+                        <a href="#" class="text-muted small">Privacy Policy</a>
+                        <a href="#" class="text-muted small">Terms of Use</a>
+                        <a href="#" class="text-muted small">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="btn btn-primary rounded-circle position-fixed bottom-0 end-0 m-4" 
+            style="display: none; z-index: 1000;" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/script.js' %}"></script>
+    
+    <script>
+        // Back to Top Button
+        window.onscroll = function() {
+            const backToTopBtn = document.getElementById("backToTop");
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                backToTopBtn.style.display = "block";
+            } else {
+                backToTopBtn.style.display = "none";
+            }
+        };
+
+        // Auto-dismiss alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

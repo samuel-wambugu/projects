@@ -1,0 +1,189 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-gradient mb-2">Choose Your Plan</h1>
+        <p class="lead text-muted">Start your journey to forex trading mastery today</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4 justify-content-center">
+        <!-- Monthly Plan -->
+        <div class="col-md-4">
+            <div class="card h-100 plan-card" id="monthly">
+                <div class="card-body d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <div class="display-6 fw-bold text-primary mb-0">Monthly</div>
+                        <div class="price mt-3">
+                            <span class="h1 fw-bold">Ksh 999</span>
+                            <span class="text-muted">/month</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="features mb-4">
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Full access to tutorials</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Real-time forex charts</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Basic trading strategies</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Community access</li>
+                    </ul>
+                    
+                    <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="subscription_type" value="monthly">
+                        <input type="hidden" name="amount" value="999">
+                        <div class="form-group mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" name="phone_number" class="form-control" 
+                                       placeholder="254XXXXXXXXX" pattern="254[0-9]{9}" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Subscribe Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quarterly Plan (Featured) -->
+        <div class="col-md-4">
+            <div class="card h-100 plan-card border-primary" id="quarterly">
+                <div class="card-body d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <div class="badge bg-primary mb-2">MOST POPULAR</div>
+                        <div class="display-6 fw-bold text-primary mb-0">Quarterly</div>
+                        <div class="price mt-3">
+                            <span class="h1 fw-bold">Ksh 2,499</span>
+                            <span class="text-muted">/quarter</span>
+                        </div>
+                        <div class="text-success small mt-2">
+                            <i class="fas fa-tag me-1"></i>Save 16%
+                        </div>
+                    </div>
+                    
+                    <ul class="features mb-4">
+                        <li><i class="fas fa-check-circle text-success me-2"></i>All Monthly features</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Advanced trading strategies</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Priority support</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Weekly market analysis</li>
+                    </ul>
+                    
+                    <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="subscription_type" value="quarterly">
+                        <input type="hidden" name="amount" value="2499">
+                        <div class="form-group mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" name="phone_number" class="form-control" 
+                                       placeholder="254XXXXXXXXX" pattern="254[0-9]{9}" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Subscribe Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yearly Plan -->
+        <div class="col-md-4">
+            <div class="card h-100 plan-card" id="yearly">
+                <div class="card-body d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <div class="display-6 fw-bold text-primary mb-0">Yearly</div>
+                        <div class="price mt-3">
+                            <span class="h1 fw-bold">Ksh 7,999</span>
+                            <span class="text-muted">/year</span>
+                        </div>
+                        <div class="text-success small mt-2">
+                            <i class="fas fa-tag me-1"></i>Save 33%
+                        </div>
+                    </div>
+                    
+                    <ul class="features mb-4">
+                        <li><i class="fas fa-check-circle text-success me-2"></i>All Quarterly features</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>One-on-one mentorship</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Trading signals access</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Exclusive webinars</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>VIP community access</li>
+                    </ul>
+                    
+                    <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="subscription_type" value="yearly">
+                        <input type="hidden" name="amount" value="7999">
+                        <div class="form-group mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" name="phone_number" class="form-control" 
+                                       placeholder="254XXXXXXXXX" pattern="254[0-9]{9}" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Subscribe Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">
+                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                        Secure Payment with M-Pesa
+                    </h5>
+                    <div class="row text-center g-3">
+                        <div class="col-md-4">
+                            <div class="feature">
+                                <i class="fas fa-lock fa-2x text-primary mb-2"></i>
+                                <h6>Secure Transactions</h6>
+                                <p class="small text-muted">Your payment information is encrypted and secure</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature">
+                                <i class="fas fa-sync fa-2x text-primary mb-2"></i>
+                                <h6>Auto-Renewal</h6>
+                                <p class="small text-muted">Hassle-free subscription management</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature">
+                                <i class="fas fa-hand-holding-usd fa-2x text-primary mb-2"></i>
+                                <h6>Money-Back Guarantee</h6>
+                                <p class="small text-muted">30-day satisfaction guarantee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a decorative background -->
+<div class="position-fixed top-0 start-0 w-100 h-100 z-n1" 
+     style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);"></div>
+{% endblock %}

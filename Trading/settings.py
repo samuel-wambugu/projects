@@ -17,6 +17,14 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# M-Pesa API configuration
+MPESA_ENVIRONMENT = 'sandbox'
+MPESA_CONSUMER_KEY = 'your_consumer_key'
+MPESA_CONSUMER_SECRET = 'your_consumer_secret'
+MPESA_SHORTCODE = 'your_shortcode'
+MPESA_PASS_KEY = 'your_pass_key'
+MPESA_CALLBACK_URL = 'https://your-domain.com/mpesa/callback/'
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -45,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'base.apps.BaseConfig',
     "phonenumber_field",
+    'django_daraja',
 ]
 
 MIDDLEWARE = [

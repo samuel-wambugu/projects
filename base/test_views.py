@@ -1,9 +1,15 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import CustomUser, MediaFiles, Thumbnail, Comments
+from .models import CustomUser, MediaFiles, Thumbnail, Comments, Subscription
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.conf import settings
+from django.utils import timezone
+import tempfile
+import shutil
+import json
+from datetime import timedelta
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -15,6 +21,16 @@ class ViewsTest(TestCase):
             content=b'file_content',
             content_type='video/mp4'
         )
+        
+        # Create test user
+        self.test_user = CustomUser.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        
+        # Login the test user
+        self.client.login(username='testuser', password='testpass123')
         
         response = self.client.post(
             self.upload_video_url,
@@ -31,7 +47,14 @@ class ViewsTest(TestCase):
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class ViewsTest(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        # Clean up temporary test media files
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
+
     def setUp(self):
         self.client = Client()
         # Set up URLs
@@ -78,6 +101,89 @@ class ViewsTest(TestCase):
         self.client.login(username=self.user.email, password=self.user_password)
         
         # Try accessing login page
+        response = self.client.get(self.login_url)
+        self.assertRedirects(response, reverse('dashboard'))
+        
+    def test_subscription_plans_view(self):
+        """Test subscription plans page display"""
+        # Test without login should redirect
+        self.client.logout()
+        response = self.client.get(reverse('subscription_plans'))
+        self.assertEqual(response.status_code, 302)
+        
+        # Test with login should show plans
+        self.client.login(email=self.user.email, password=self.user_password)
+        response = self.client.get(reverse('subscription_plans'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'base/subscription_plans.html')
+        
+    def test_initiate_payment_view(self):
+        """Test initiating M-Pesa payment"""
+        # Test without login should redirect
+        self.client.logout()
+        response = self.client.post(reverse('initiate_payment'))
+        self.assertEqual(response.status_code, 302)
+        
+        # Test with login but missing data
+        self.client.login(email=self.user.email, password=self.user_password)
+        response = self.client.post(reverse('initiate_payment'))
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(any('Please provide all required information' in str(m) for m in messages))
+        
+        # Test with valid data
+        response = self.client.post(reverse('initiate_payment'), {
+            'phone_number': '254712345678',
+            'amount': '999',
+            'subscription_type': 'monthly'
+        })
+        self.assertEqual(response.status_code, 302)  # Should redirect back to plans page
+        
+    @override_settings(MPESA_ENVIRONMENT='sandbox')
+    def test_mpesa_callback(self):
+        """Test M-Pesa callback processing"""
+        # Setup test data
+        checkout_request_id = 'ws_CO_123456789'
+        self.client.login(email=self.user.email, password=self.user_password)
+        session = self.client.session
+        session['pending_payment'] = {
+            'checkout_request_id': checkout_request_id,
+            'subscription_type': 'monthly',
+            'amount': '999'
+        }
+        session.save()
+        
+        # Test successful payment callback
+        callback_data = {
+            'Body': {
+                'stkCallback': {
+                    'ResultCode': 0,
+                    'CheckoutRequestID': checkout_request_id
+                }
+            }
+        }
+        response = self.client.post(
+            reverse('mpesa_callback'),
+            data=json.dumps(callback_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        
+        # Verify subscription was created
+        subscription = Subscription.objects.filter(user=self.user, subscription_type='monthly').first()
+        self.assertIsNotNone(subscription)
+        self.assertEqual(subscription.payment_reference, checkout_request_id)
+        self.assertTrue(subscription.end_date > timezone.now())
+        
+        # Test invalid callback data
+        response = self.client.post(
+            reverse('mpesa_callback'),
+            data=json.dumps({'invalid': 'data'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)  # Bad request for invalid data structure
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'Missing required fields')
         response = self.client.get(self.login_url)
         
         self.assertRedirects(response, self.dashboard_url)

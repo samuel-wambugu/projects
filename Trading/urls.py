@@ -15,14 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path , include
+from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from base import views  # Import views for M-Pesa callback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('base.urls'))
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),  # M-Pesa callback at root level
+    path('', include('base.urls')),
 ]
 
+# Add static/media serving for development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

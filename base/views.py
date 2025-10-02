@@ -1,20 +1,52 @@
-from django.shortcuts import render , get_object_or_404, redirect
-from .models import Comments , CustomUser , MediaFiles, Thumbnail
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Comments, CustomUser, MediaFiles, Thumbnail, Tutorial, Subscription, CurrencyPair, UserProgress
 from django.contrib.auth import logout, login, authenticate
 from .form import CommentsForm, MyCustomUserForm, MediaFilesForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
+import json
 
 
 # Create your views here.
 
-def dashboard(request,):
-    user = CustomUser.objects.all()
-    video = MediaFiles.objects.all()
-    context = {'user': user, 'video':video}
+def home(request):
+    """Landing page view"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+        
+    featured_tutorials = Tutorial.objects.filter(is_featured=True)[:3]
+    context = {
+        'featured_tutorials': featured_tutorials,
+    }
+    return render(request, 'base/home.html', context)
 
-    return render(request, 'base/dashboard.html',context)
+@login_required
+def dashboard(request):
+    user = request.user
+    subscription = Subscription.objects.filter(user=user, is_active=True).first()
+    tutorials = Tutorial.objects.all()
+    currency_pairs = CurrencyPair.objects.all()
+    user_progress = UserProgress.objects.filter(user=user)
+    
+    # Calculate progress
+    total_tutorials = tutorials.count()
+    completed_tutorials = user_progress.filter(completed=True).count()
+    progress_percentage = (completed_tutorials / total_tutorials * 100) if total_tutorials > 0 else 0
+    
+    context = {
+        'user': user,
+        'subscription': subscription,
+        'tutorials': tutorials,
+        'currency_pairs': currency_pairs,
+        'progress_percentage': progress_percentage,
+        'total_tutorials': total_tutorials,
+        'completed_tutorials': completed_tutorials,
+    }
+    return render(request, 'base/dashboard.html', context)
 
 def loginfunc(request):
     page = 'login'
@@ -53,6 +85,218 @@ def loginfunc(request):
 def logoutpage(request):
     logout(request)
     return redirect('login')
+
+@login_required
+def tutorial_list(request):
+    tutorials = Tutorial.objects.all()
+    user_progress = UserProgress.objects.filter(user=request.user)
+    subscription = Subscription.objects.filter(user=request.user, is_active=True).first()
+    
+    # Filter tutorials based on subscription
+    if not subscription:
+        tutorials = tutorials.filter(free_access=True)
+    
+    context = {
+        'tutorials': tutorials,
+        'user_progress': user_progress,
+        'subscription': subscription
+    }
+    return render(request, 'base/tutorial_list.html', context)
+
+@login_required
+def tutorial_detail(request, pk):
+    tutorial = get_object_or_404(Tutorial, pk=pk)
+    subscription = Subscription.objects.filter(user=request.user, is_active=True).first()
+    
+    # Check access permission
+    if not tutorial.free_access and not subscription:
+        messages.error(request, "Please subscribe to access this tutorial")
+        return redirect('subscription_plans')
+    
+    # Track progress
+    progress, created = UserProgress.objects.get_or_create(
+        user=request.user,
+        tutorial=tutorial
+    )
+    if not progress.completed:
+        progress.last_accessed = timezone.now()
+        progress.save()
+    
+    context = {
+        'tutorial': tutorial,
+        'progress': progress
+    }
+    return render(request, 'base/tutorial_detail.html', context)
+
+@login_required
+def mark_tutorial_complete(request, pk):
+    tutorial = get_object_or_404(Tutorial, pk=pk)
+    progress, created = UserProgress.objects.get_or_create(
+        user=request.user,
+        tutorial=tutorial
+    )
+    progress.completed = True
+    progress.completion_date = timezone.now()
+    progress.save()
+    
+    messages.success(request, f"Congratulations! You've completed {tutorial.title}")
+    return redirect('tutorial_list')
+
+@login_required
+def subscription_plans(request):
+    context = {
+        'current_subscription': Subscription.objects.filter(
+            user=request.user,
+            is_active=True
+        ).first()
+    }
+    return render(request, 'base/subscription_plans.html', context)
+
+@login_required
+def forex_dashboard(request):
+    # Fetch latest forex data
+    from .services import fetch_forex_data
+    fetch_forex_data()
+    
+    # Get all currency pairs
+    currency_pairs = CurrencyPair.objects.all().order_by('base_currency')
+    
+    context = {
+        'currency_pairs': currency_pairs
+    }
+    return render(request, 'base/forex_dashboard.html', context)
+
+@login_required
+def forex_chart(request, pair_id):
+    from .services import get_forex_chart_data
+    
+    pair = get_object_or_404(CurrencyPair, id=pair_id)
+    timeframe = request.GET.get('timeframe', '1mo')
+    
+    chart_data = get_forex_chart_data(pair_id, timeframe)
+    
+    context = {
+        'pair': pair,
+        'chart_data': chart_data,
+        'timeframe': timeframe
+    }
+    return render(request, 'base/forex_chart.html', context)
+
+@login_required
+def initiate_payment(request):
+    from django_daraja.mpesa.core import MpesaClient
+    
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number')
+        amount = request.POST.get('amount')
+        subscription_type = request.POST.get('subscription_type')
+        
+        if not all([phone_number, amount, subscription_type]):
+            messages.error(request, 'Please provide all required information')
+            return redirect('subscription_plans')
+            
+        try:
+            cl = MpesaClient()
+            phone_number = phone_number.replace('+', '')  # Remove + from phone number
+            
+            # Initiate STK push
+            response = cl.stk_push(
+                phone_number=phone_number,
+                amount=int(float(amount)),
+                account_reference='Forex Tutorial',
+                transaction_desc=f'{subscription_type} Subscription Payment'
+            )
+            
+            if 'CheckoutRequestID' in response:
+                # Store payment information
+                request.session['pending_payment'] = {
+                    'checkout_request_id': response['CheckoutRequestID'],
+                    'subscription_type': subscription_type,
+                    'amount': amount
+                }
+                messages.success(request, 'Payment initiated. Please complete the payment on your phone.')
+            else:
+                messages.error(request, 'Payment initiation failed. Please try again.')
+                
+        except Exception as e:
+            messages.error(request, f'Payment processing error: {str(e)}')
+            
+    return redirect('subscription_plans')
+
+@csrf_exempt
+def mpesa_callback(request):
+    if request.method == 'POST':
+        try:
+            # Process the callback data
+            data = json.loads(request.body)
+            
+            # Validate required fields
+            if not all(key in data for key in ['Body']):
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+            
+            callback = data.get('Body', {}).get('stkCallback', {})
+            if not callback or 'ResultCode' not in callback:
+                return JsonResponse({'status': 'error', 'message': 'Invalid callback format'}, status=400)
+            
+            # Check if payment was successful
+            if callback['ResultCode'] == 0:
+                checkout_request_id = callback['CheckoutRequestID']
+                
+                # Get pending payment info from session
+                pending_payment = request.session.get('pending_payment', {})
+                if pending_payment.get('checkout_request_id') == checkout_request_id:
+                    # Create subscription
+                    subscription_type = pending_payment['subscription_type']
+                    amount = pending_payment['amount']
+                    
+                    # Calculate end date based on subscription type
+                    duration_map = {
+                        'monthly': 30,
+                        'quarterly': 90,
+                        'yearly': 365
+                    }
+                    days = duration_map.get(subscription_type, 30)
+                    end_date = timezone.now() + timedelta(days=days)
+                    
+                    Subscription.objects.create(
+                        user=request.user,
+                        subscription_type=subscription_type,
+                        end_date=end_date,
+                        payment_reference=checkout_request_id,
+                        amount_paid=amount
+                    )
+                    
+                    # Clear pending payment
+                    del request.session['pending_payment']
+                    
+                    messages.success(request, 'Payment successful! Your subscription is now active.')
+                    
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Payment failed',
+                    'code': callback['ResultCode']
+                }, status=400)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+@login_required
+def subscription_plans(request):
+    active_subscription = Subscription.objects.filter(
+        user=request.user, 
+        end_date__gt=timezone.now()
+    ).first()
+    
+    context = {
+        'active_subscription': active_subscription,
+    }
+    return render(request, 'base/subscription_plans.html', context)
 
 def register(request):
     
