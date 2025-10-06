@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Comments, CustomUser, MediaFiles, Thumbnail, Tutorial, Subscription, CurrencyPair, UserProgress
+from .models import CustomUser, Tutorial, Subscription, CurrencyPair, UserProgress
 from django.contrib.auth import logout, login, authenticate
-from .form import CommentsForm, MyCustomUserForm, MediaFilesForm
+from .form import MyCustomUserForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -332,31 +332,23 @@ def upload_video(request):
     if request.method == "POST" and request.FILES.get("video"):
         title = request.POST.get("title", "Untitled")
         video_file = request.FILES["video"]
-        thumbnail_id = request.POST.get("images")
-        
-        try:
-            thumbnail = Thumbnail.objects.get(id=thumbnail_id) if thumbnail_id else None
-            video = MediaFiles.objects.create(
-                title=title,
-                videos=video_file,
-                images=thumbnail
-            )
-            return JsonResponse({
-                "message": "Video uploaded successfully!",
-                "video_url": video.videos.url,
-                "title": video.title
-            })
-        except (Thumbnail.DoesNotExist, ValueError):
-            return JsonResponse({"error": "Invalid thumbnail ID"}, status=400)
-    
-    return JsonResponse({"error": "Invalid request"}, status=400)
+        level = request.POST.get("level", "beginner")
+        free_access = request.POST.get("free_access") == "on"  # checkbox returns 'on' if checked
 
-def upload_thumbnail(request):
-    if  request.method == "POST":
-        image = request.FILES.get('images')
-        if image:
-            Thumbnail.objects.create(cover=image)
-    return render(request, 'base/dashboard.html')
+        video = Tutorial.objects.create(
+            title=title,
+            videos=video_file,
+            level=level,
+            free_access=free_access,
+            order=Tutorial.objects.count() + 1,  # auto assign order
+            content="",  # default empty if not provided
+        )
+
+    return redirect('dashboard')
+
+
+
+
 
 
 

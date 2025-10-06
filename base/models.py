@@ -47,30 +47,8 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.fullname
     
-class Thumbnail(models.Model):
-   cover = models.ImageField(upload_to="images")
-   def __str__(self):
-        return self.cover.name
-    
-class MediaFiles(models.Model):
-    title = models.CharField(max_length=30,blank=False)
 
-    images = models.OneToOneField(Thumbnail, on_delete=models.CASCADE)
-    videos = models.FileField(upload_to='videos')
-    bio = models.TextField(blank=False)
 
-class Comments(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    body = models.TextField()
-    videoImage = models.ForeignKey(MediaFiles,on_delete=models.CASCADE)
-    updated = models.DateTimeField(auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-updated', '-created']
-
-    def __str__(self):
-        return self.body
 
 class Tutorial(models.Model):
     LEVEL_CHOICES = [
@@ -80,6 +58,7 @@ class Tutorial(models.Model):
     ]
 
     title = models.CharField(max_length=200)
+    videos = models.FileField(upload_to='videos', null=True, blank=True)
     content = models.TextField()
     video_url = models.URLField(null=True, blank=True)
     free_access = models.BooleanField(default=False)

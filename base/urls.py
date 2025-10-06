@@ -12,7 +12,7 @@ urlpatterns = [
     # Main app URLs
     path('dashboard/', views.dashboard, name='dashboard'),
     path('upload-video/', views.upload_video, name='upload_video'),
-    path('upload-thumbnail/', views.upload_thumbnail, name='upload_thumbnail'),
+   
     
     # Tutorial URLs
     path('tutorials/', views.tutorial_list, name='tutorial_list'),
