@@ -1,0 +1,137 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">{% if form.instance.pk %}Edit{% else %}Create New{% endif %} Tutorial</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Content -->
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">Content</label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                                <div class="invalid-feedback">{{ form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Thumbnail -->
+                        <div class="mb-3">
+                            <label for="{{ form.thumbnail.id_for_label }}" class="form-label">Thumbnail</label>
+                            {{ form.thumbnail }}
+                            {% if form.thumbnail.errors %}
+                                <div class="invalid-feedback">{{ form.thumbnail.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Video -->
+                        <div class="mb-3">
+                            <label for="{{ form.video.id_for_label }}" class="form-label">Video</label>
+                            {{ form.video }}
+                            {% if form.video.errors %}
+                                <div class="invalid-feedback">{{ form.video.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Video URL (Optional) -->
+                        <div class="mb-3">
+                            <label for="{{ form.video_url.id_for_label }}" class="form-label">Video URL (Optional)</label>
+                            {{ form.video_url }}
+                            {% if form.video_url.errors %}
+                                <div class="invalid-feedback">{{ form.video_url.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price -->
+                        <div class="mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">Price (KES)</label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                                <div class="invalid-feedback">{{ form.price.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Free Access -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.free_access }}
+                                <label class="form-check-label" for="{{ form.free_access.id_for_label }}">
+                                    Make this tutorial free
+                                </label>
+                            </div>
+                            {% if form.free_access.errors %}
+                                <div class="invalid-feedback">{{ form.free_access.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Level -->
+                        <div class="mb-3">
+                            <label for="{{ form.level.id_for_label }}" class="form-label">Difficulty Level</label>
+                            {{ form.level }}
+                            {% if form.level.errors %}
+                                <div class="invalid-feedback">{{ form.level.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Order -->
+                        <div class="mb-3">
+                            <label for="{{ form.order.id_for_label }}" class="form-label">Display Order</label>
+                            {{ form.order }}
+                            {% if form.order.errors %}
+                                <div class="invalid-feedback">{{ form.order.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Tutorial
+                            </button>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add JavaScript for form handling -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const freeAccessCheckbox = document.getElementById('{{ form.free_access.id_for_label }}');
+    const priceInput = document.getElementById('{{ form.price.id_for_label }}');
+
+    // Function to toggle price input based on free access
+    function togglePriceInput() {
+        priceInput.disabled = freeAccessCheckbox.checked;
+        if (freeAccessCheckbox.checked) {
+            priceInput.value = '0';
+        }
+    }
+
+    // Initial state
+    togglePriceInput();
+
+    // Add event listener for changes
+    freeAccessCheckbox.addEventListener('change', togglePriceInput);
+});
+</script>
+{% endblock content %}

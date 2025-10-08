@@ -1,0 +1,31 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>All Tutorials</h2>
+    <div class="row">
+        {% for tutorial in tutorials %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    {% if tutorial.thumbnail %}
+                        <img src="{{ tutorial.thumbnail.url }}" class="card-img-top" alt="{{ tutorial.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tutorial.title }}</h5>
+                        <p class="card-text">{{ tutorial.content|truncatewords:20 }}</p>
+                        <p class="card-text">
+                            {% if tutorial.price > 0 %}
+                                <strong>Price: ${{ tutorial.price }}</strong>
+                            {% else %}
+                                <span class="text-success">Free</span>
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'tutorial_detail' tutorial.id %}" class="btn btn-primary">View Tutorial</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 
 
 
@@ -33,20 +34,25 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     username = None
     fullname = models.CharField(max_length=200, blank=False)
-    email = models.EmailField(blank=False,unique=True)
-    phonenumber = PhoneNumberField(unique=True)
+    email = models.EmailField(blank=False, unique=True)
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+    )
+    phonenumber = models.CharField(validators=[phone_regex], max_length=17, unique=True)
 
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
 
-    REQUIRED_FIELDS= ['fullname', 'phonenumber']
+    REQUIRED_FIELDS = ['fullname', 'phonenumber']
 
     
 
     def __str__(self):
         return self.fullname
     
+
 
 
 
@@ -57,22 +63,44 @@ class Tutorial(models.Model):
         ('advanced', 'Advanced'),
     ]
 
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tutorials', null=True)
     title = models.CharField(max_length=200)
-    videos = models.FileField(upload_to='videos', null=True, blank=True)
-    content = models.TextField()
+    content = models.TextField(default="")
+    thumbnail = models.ImageField(upload_to="images", null=True, blank=True)
+    video = models.FileField(upload_to='videos', null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     free_access = models.BooleanField(default=False)
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
-    order = models.IntegerField()
+    order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.title} by {self.author.fullname}"
+
+    class Meta:
+        ordering = ['order', '-created_at']
     
     class Meta:
         ordering = ['order', 'created_at']
     
     def __str__(self):
         return f"{self.title} ({self.get_level_display()})"
+
+class Comments(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    body = models.TextField()
+    tutorial = models.ForeignKey(Tutorial, on_delete=models.CASCADE)
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-updated', '-created']
+
+    def __str__(self):
+        return self.body
 
 class Subscription(models.Model):
     SUBSCRIPTION_CHOICES = [

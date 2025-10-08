@@ -1,0 +1,156 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">Welcome, {{ user.fullname }}!</h4>
+                            <p class="mb-0">Admin Dashboard</p>
+                        </div>
+                        <a href="{% url 'create_tutorial' %}" class="btn btn-light">
+                            <i class="fas fa-plus"></i> Create New Tutorial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Total Tutorials -->
+        <div class="col-md-4">
+            <div class="card stats-card h-100">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-2">Total Tutorials</h6>
+                            <h2 class="mb-0">{{ tutorials.count }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                            <i class="fas fa-book fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Students -->
+        <div class="col-md-4">
+            <div class="card h-100" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-2">Total Students</h6>
+                            <h2 class="mb-0">{{ total_students }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Earnings -->
+        <div class="col-md-4">
+            <div class="card h-100" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-uppercase mb-2">Total Earnings</h6>
+                            <h2 class="mb-0">KES {{ total_earnings|floatformat:2 }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-white bg-opacity-25 p-3">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorials Table -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Your Tutorials</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Level</th>
+                            <th>Price</th>
+                            <th>Access</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tutorial in tutorials %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if tutorial.thumbnail %}
+                                        <img src="{{ tutorial.thumbnail.url }}" alt="{{ tutorial.title }}" 
+                                             class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded me-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-video fa-lg text-muted m-2"></i>
+                                        </div>
+                                    {% endif %}
+                                    {{ tutorial.title }}
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary">{{ tutorial.get_level_display }}</span></td>
+                            <td>
+                                {% if tutorial.free_access %}
+                                    <span class="badge bg-success">Free</span>
+                                {% else %}
+                                    KES {{ tutorial.price|floatformat:2 }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tutorial.free_access %}
+                                    <span class="text-success"><i class="fas fa-unlock"></i> Free</span>
+                                {% else %}
+                                    <span class="text-primary"><i class="fas fa-lock"></i> Premium</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ tutorial.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <p class="text-muted mb-0">No tutorials created yet</p>
+                                <a href="{% url 'create_tutorial' %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus"></i> Create Your First Tutorial
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

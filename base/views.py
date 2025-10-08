@@ -1,7 +1,71 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import CustomUser, Tutorial, Subscription, CurrencyPair, UserProgress
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .models import Comments, CustomUser, Tutorial, Subscription, CurrencyPair, UserProgress
 from django.contrib.auth import logout, login, authenticate
-from .form import MyCustomUserForm
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
+from datetime import timedelta
+from django.utils.decorators import method_decorator
+from functools import wraps
+from .form import MyCustomUserForm, TutorialForm
+import json
+
+from django.contrib.auth.decorators import user_passes_test
+
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views import View
+from django.utils.decorators import method_decorator
+
+from functools import wraps
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+
+def superuser_required(view_func):
+    """
+    Decorator for views that checks that the user is logged in and is a superuser.
+    Redirects to login page if not authenticated.
+    Returns 403 if authenticated but not superuser.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            login_url = reverse('login')
+            return redirect(f"{login_url}?next={request.path}")
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+    
+def api_superuser_required(view_func):
+    """
+    Decorator for API views that checks that the user is logged in and is a superuser.
+    Returns appropriate JSON responses for each case.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Please log in"}, status=401)
+        if not request.user.is_superuser:
+            return JsonResponse({"error": "Unauthorized"}, status=403)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+# Import M-Pesa integration
+try:
+    from django_daraja.mpesa.core import MpesaClient
+    MPESA_ENABLED = True
+except ImportError:
+    MPESA_ENABLED = False
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -170,6 +234,14 @@ def forex_dashboard(request):
 def forex_chart(request, pair_id):
     from .services import get_forex_chart_data
     
+from django.contrib.auth.decorators import login_required
+
+
+
+@login_required
+def forex_chart(request, pair_id):
+    from .services import get_forex_chart_data
+    
     pair = get_object_or_404(CurrencyPair, id=pair_id)
     timeframe = request.GET.get('timeframe', '1mo')
     
@@ -184,8 +256,10 @@ def forex_chart(request, pair_id):
 
 @login_required
 def initiate_payment(request):
-    from django_daraja.mpesa.core import MpesaClient
-    
+    if not MPESA_ENABLED:
+        messages.error(request, 'Payment system is currently unavailable')
+        return redirect('subscription_plans')
+        
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number')
         amount = request.POST.get('amount')
@@ -327,28 +401,96 @@ def register(request):
     return render(request, 'base/loginpage.html')
 
 
+@login_required
+@superuser_required
+def admin_dashboard(request):
+    tutorials = Tutorial.objects.all().order_by('order')
+    total_students = UserProgress.objects.filter(tutorial__in=tutorials).values('user').distinct().count()
+    total_earnings = sum(tutorial.price for tutorial in tutorials if not tutorial.free_access)
+    
+    context = {
+        'tutorials': tutorials,
+        'total_students': total_students,
+        'total_earnings': total_earnings,
+    }
+    return render(request, 'base/admin_dashboard.html', context)
+
+@superuser_required
+def create_tutorial(request):
+    """Create new tutorial view"""
+    if request.method == 'POST':
+        form = TutorialForm(request.POST, request.FILES)
+        if form.is_valid():
+            tutorial = form.save(commit=False)
+            tutorial.author = request.user
+            tutorial.free_access = form.cleaned_data.get('free_access', False)
+            tutorial.price = 0 if tutorial.free_access else form.cleaned_data.get('price', 0)
+            tutorial.order = form.cleaned_data.get('order', Tutorial.objects.count() + 1)
+            
+            if 'video' in request.FILES:
+                tutorial.video = request.FILES['video']
+            if 'thumbnail' in request.FILES:
+                tutorial.thumbnail = request.FILES['thumbnail']
+            
+            tutorial.save()
+            return redirect('admin_dashboard')
+        else:
+            print("Form errors:", form.errors)  # Debug print
+            
+        return render(request, 'base/tutorial_form.html', {'form': form})
+    
+    form = TutorialForm()
+    return render(request, 'base/tutorial_form.html', {'form': form})
+
 @csrf_exempt
-def upload_video(request):
+@superuser_required
+def upload_video(request):        
     if request.method == "POST" and request.FILES.get("video"):
         title = request.POST.get("title", "Untitled")
         video_file = request.FILES["video"]
-        level = request.POST.get("level", "beginner")
-        free_access = request.POST.get("free_access") == "on"  # checkbox returns 'on' if checked
-
-        video = Tutorial.objects.create(
+        thumbnail = request.FILES.get("thumbnail")
+        price = request.POST.get("price", 0)
+        free_access = request.POST.get("free_access", "false").lower() == "true"
+        
+        tutorial = Tutorial.objects.create(
+            author=request.user,
             title=title,
-            videos=video_file,
-            level=level,
+            video=video_file,
+            thumbnail=thumbnail if thumbnail else None,
+            content="",  # Add default content or get from request
+            price=price if not free_access else 0,
             free_access=free_access,
-            order=Tutorial.objects.count() + 1,  # auto assign order
-            content="",  # default empty if not provided
+            order=Tutorial.objects.count() + 1  # Default ordering at the end
         )
+        
+        return JsonResponse({
+            "message": "Video uploaded successfully!",
+            "video_url": tutorial.video.url,
+            "title": tutorial.title,
+            "thumbnail_url": tutorial.thumbnail.url if tutorial.thumbnail else None,
+            "price": float(tutorial.price)
+        })
+    
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
-    return redirect('dashboard')
-
-
-
-
+def upload_thumbnail(request):
+    if request.method == "POST" and request.FILES.get('thumbnail'):
+        image = request.FILES['thumbnail']
+        tutorial_id = request.POST.get('tutorial_id')
+        
+        if tutorial_id:
+            try:
+                tutorial = Tutorial.objects.get(id=tutorial_id)
+                tutorial.thumbnail.save(image.name, image, save=True)
+                tutorial.save()
+                
+                return JsonResponse({
+                    "message": "Thumbnail uploaded successfully!",
+                    "thumbnail_url": tutorial.thumbnail.url
+                })
+            except Tutorial.DoesNotExist:
+                return JsonResponse({"error": "Tutorial not found"}, status=404)
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 
 

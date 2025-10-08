@@ -51,9 +51,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'base.apps.BaseConfig',
-    "phonenumber_field",
     'django_daraja',
+    'base.apps.BaseConfig',
 ]
 
 MIDDLEWARE = [
@@ -142,6 +141,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+LOGIN_URL = 'login'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 

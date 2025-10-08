@@ -1,7 +1,7 @@
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import CustomUser, MediaFiles, Thumbnail, Comments, Subscription
+from .models import CustomUser, Tutorial, Comments, Subscription
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.conf import settings
@@ -10,42 +10,6 @@ import tempfile
 import shutil
 import json
 from datetime import timedelta
-
-class ViewsTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        
-        # Create test video file with proper content
-        video_file = SimpleUploadedFile(
-            name='test_video.mp4',
-            content=b'file_content',
-            content_type='video/mp4'
-        )
-        
-        # Create test user
-        self.test_user = CustomUser.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
-        )
-        
-        # Login the test user
-        self.client.login(username='testuser', password='testpass123')
-        
-        response = self.client.post(
-            self.upload_video_url,
-            {
-                'title': 'Test Video',
-                'video': video_file  # Make sure field name matches view
-            },
-            format='multipart'  # Ensure proper multipart form data
-        )
-        
-        self.assertEqual(response.status_code, 200, 
-                        f"Expected 200 status code, got {response.status_code}. "
-                        f"Response content: {response.content.decode()}")
-from django.contrib.auth import get_user_model
-from django.contrib.messages import get_messages
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class ViewsTest(TestCase):
@@ -80,10 +44,19 @@ class ViewsTest(TestCase):
             content_type="video/mp4"
         )
 
+        # Create a valid image file for testing
+        import tempfile
+        from PIL import Image
+        
+        # Create a temporary image file
+        image = Image.new('RGB', (100, 100), 'white')
+        self.thumbnail_temp = tempfile.NamedTemporaryFile(suffix='.jpg')
+        image.save(self.thumbnail_temp.name, 'JPEG')
+        
         # Create test image file
         self.image_file = SimpleUploadedFile(
             "test_image.jpg",
-            b"file_content",
+            open(self.thumbnail_temp.name, 'rb').read(),
             content_type="image/jpeg"
         )
     
@@ -246,17 +219,17 @@ class ViewsTest(TestCase):
     def tearDown(self):
         """Clean up after each test"""
         CustomUser.objects.all().delete()  # Clean up users
-        MediaFiles.objects.all().delete()  # Clean up media files
-        Thumbnail.objects.all().delete()   # Clean up thumbnails
+        Tutorial.objects.all().delete()  # Clean up tutorials
+        Comments.objects.all().delete()  # Clean up comments
 
     def test_dashboard_view(self):
         """Test dashboard view displays users and videos"""
-        self.client.login(username='test@example.com', password='testpass123')
+        # Login using the correct credentials
+        self.client.login(email='testuser@example.com', password=self.user_password)
         response = self.client.get(self.dashboard_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'base/dashboard.html')
         self.assertIn('user', response.context)
-        self.assertIn('video', response.context)
 
     def test_login_authenticated_redirect(self):
         """Test that authenticated users are redirected from login page"""
@@ -306,29 +279,50 @@ class ViewsTest(TestCase):
 
     def test_upload_video(self):
         """Test video upload functionality"""
-        self.client.login(username='testuser@example.com', password=self.user_password)
+        upload_url = reverse('upload_video')
         
-        # Create a thumbnail first since it's required
-        thumbnail = Thumbnail.objects.create(
-            cover=SimpleUploadedFile(
-                name='test_thumb.jpg',
-                content=b'file_content',
-                content_type='image/jpeg'
-            )
+        # Test without login
+        response = self.client.get(upload_url)
+        self.assertRedirects(response, f"{reverse('login')}?next={upload_url}")
+        
+        # Test with regular user
+        user = CustomUser.objects.create_user(
+            email='user@example.com',
+            password='userpass123',
+            fullname='Regular User',
+            phonenumber='+254700000088'
         )
+        self.client.login(email='user@example.com', password='userpass123')
+        response = self.client.get(upload_url)
+        self.assertEqual(response.status_code, 403)  # Should be forbidden
         
-        # Create test video file
+        # Create and login as superuser
+        superuser = CustomUser.objects.create_superuser(
+            email='admin@example.com',
+            password='adminpass123',
+            fullname='Admin User',
+            phonenumber='+254700000099'
+        )
+        self.client.login(email='admin@example.com', password='adminpass123')
+        
+        # Create test video and thumbnail files
         video_file = SimpleUploadedFile(
             name='test_video.mp4',
             content=b'file_content',
             content_type='video/mp4'
         )
         
-        # Upload the video
+        thumbnail_file = SimpleUploadedFile(
+            name='test_thumb.jpg',
+            content=b'file_content',
+            content_type='image/jpeg'
+        )
+        
+        # Upload the video and thumbnail
         data = {
             'title': 'Test Video',
             'video': video_file,
-            'images': thumbnail.id
+            'thumbnail': thumbnail_file
         }
         response = self.client.post(self.upload_video_url, data)
         
@@ -337,20 +331,35 @@ class ViewsTest(TestCase):
                         f"Response status: {response.status_code}, "
                         f"Content: {response.content.decode()}")
         
-        # Verify video was created
+        # Verify tutorial was created
         self.assertTrue(
-            MediaFiles.objects.filter(title='Test Video').exists(),
-            "Video was not created in database"
+            Tutorial.objects.filter(title='Test Video').exists(),
+            "Tutorial was not created in database"
         )
 
     def test_upload_thumbnail(self):
         """Test thumbnail upload functionality"""
-        self.client.login(username='test@example.com', password='testpass123')
+        self.client.login(email=self.user.email, password=self.user_password)
+        
+        # First create a tutorial
+        tutorial = Tutorial.objects.create(
+            title='Test Tutorial',
+            content='Test content',
+            order=1,
+            author=self.user
+        )
+        
+        # Now add a thumbnail to it
         response = self.client.post(self.upload_thumbnail_url, {
-            'images': self.image_file
+            'thumbnail': self.image_file,
+            'tutorial_id': tutorial.id
         })
+        
+        # Refresh tutorial from database
+        tutorial.refresh_from_db()
+        
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(Thumbnail.objects.filter(cover__contains='test_image').exists())
+        self.assertTrue(tutorial.thumbnail.name.endswith('test_image.jpg'))
 
     def test_register_duplicate_email(self):
         """Test registration with existing email"""
@@ -418,7 +427,114 @@ class ViewsTest(TestCase):
             f"Expected message containing '{error_message}', got: {[str(m) for m in messages]}"
         )
 
+    def test_admin_dashboard_access(self):
+        """Test that only superusers can access admin dashboard"""
+        admin_dashboard_url = reverse('admin_dashboard')
+        
+        # Test access without login
+        response = self.client.get(admin_dashboard_url)
+        self.assertRedirects(response, f"{reverse('login')}?next={admin_dashboard_url}")
+        
+        # Test access with regular user
+        self.client.login(email=self.user.email, password=self.user_password)
+        response = self.client.get(admin_dashboard_url)
+        self.assertEqual(response.status_code, 403)  # Should be forbidden
+        
+        # Create and test with superuser
+        superuser = CustomUser.objects.create_superuser(
+            email='admin@example.com',
+            password='adminpass123',
+            fullname='Admin User',
+            phonenumber='+254700000099'
+        )
+        self.client.login(email='admin@example.com', password='adminpass123')
+        response = self.client.get(admin_dashboard_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'base/admin_dashboard.html')
+
+    def test_create_tutorial_access(self):
+        """Test that only superusers can create tutorials"""
+        create_tutorial_url = reverse('create_tutorial')
+        
+        # Test access without login
+        response = self.client.get(create_tutorial_url)
+        self.assertRedirects(response, f"{reverse('login')}?next={create_tutorial_url}")
+        
+        # Test access with regular user
+        user = CustomUser.objects.create_user(
+            email='user@example.com',
+            password='userpass123',
+            fullname='Regular User',
+            phonenumber='+254700000088'
+        )
+        self.client.login(email='user@example.com', password='userpass123')
+        response = self.client.get(create_tutorial_url)
+        self.assertEqual(response.status_code, 403)  # Should be forbidden
+        
+        # Test with superuser
+        superuser = CustomUser.objects.create_superuser(
+            email='admin@example.com',
+            password='adminpass123',
+            fullname='Admin User',
+            phonenumber='+254700000099'
+        )
+        self.client.login(email='admin@example.com', password='adminpass123')
+        response = self.client.get(create_tutorial_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'base/tutorial_form.html')
+
+    def test_create_tutorial_with_price(self):
+        """Test creating a tutorial with price"""
+        create_tutorial_url = reverse('create_tutorial')
+        
+        superuser = CustomUser.objects.create_superuser(
+            email='admin@example.com',
+            password='adminpass123',
+            fullname='Admin User',
+            phonenumber='+254700000099')
+            
+        self.client.login(email='admin@example.com', password='adminpass123')
+        
+        # Create a valid image file
+        import tempfile
+        from PIL import Image
+        
+        # Create a temporary image file
+        image = Image.new('RGB', (100, 100), 'white')
+        thumbnail_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+        image.save(thumbnail_file.name, 'JPEG')
+        
+        # Prepare tutorial data with file uploads
+        data = {
+            'title': 'Paid Tutorial',
+            'content': 'This is a paid tutorial',
+            'price': '99.99',
+            'order': 1,
+            'level': 'beginner',  # Added required field
+            'video': SimpleUploadedFile(
+                "test_video.mp4",
+                b"file_content",
+                content_type="video/mp4"
+            ),
+            'thumbnail': SimpleUploadedFile(
+                "test_image.jpg",
+                open(thumbnail_file.name, 'rb').read(),
+                content_type="image/jpeg"
+            )
+        }
+        
+        # Submit the tutorial
+        response = self.client.post(create_tutorial_url, data)
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        
+        # Verify tutorial was created with correct price and author
+        tutorial = Tutorial.objects.get(title='Paid Tutorial')
+        self.assertEqual(float(tutorial.price), 99.99)
+        self.assertEqual(tutorial.author, superuser)
+        self.assertTrue(tutorial.video)
+        self.assertTrue(tutorial.thumbnail)
+
     def tearDown(self):
         # Clean up uploaded files
-        MediaFiles.objects.all().delete()
-        Thumbnail.objects.all().delete()
+        Tutorial.objects.all().delete()
+        Comments.objects.all().delete()

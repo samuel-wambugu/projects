@@ -12,12 +12,16 @@ urlpatterns = [
     # Main app URLs
     path('dashboard/', views.dashboard, name='dashboard'),
     path('upload-video/', views.upload_video, name='upload_video'),
-   
+    path('upload-thumbnail/', views.upload_thumbnail, name='upload_thumbnail'),
     
     # Tutorial URLs
     path('tutorials/', views.tutorial_list, name='tutorial_list'),
     path('tutorials/<int:pk>/', views.tutorial_detail, name='tutorial_detail'),
     path('tutorials/<int:pk>/complete/', views.mark_tutorial_complete, name='mark_tutorial_complete'),
+    
+    # Admin URLs
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('tutorials/create/', views.create_tutorial, name='create_tutorial'),
     
     # Subscription URLs
     path('subscriptions/', views.subscription_plans, name='subscription_plans'),
