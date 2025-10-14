@@ -11,6 +11,21 @@
     --text-secondary: #64748b;
 }
 
+/* CRITICAL: Force navbar links to be visible - Override all other styles */
+.navbar .navbar-nav .nav-link,
+.navbar-nav .nav-link,
+nav .nav-link,
+.nav-link {
+    color: #000000 !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-block !important;
+    z-index: 9999 !important;
+    position: relative !important;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--background-color);
@@ -18,6 +33,15 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+* {
+    max-width: 100%;
 }
 
 /* Login Page Styles */
@@ -45,7 +69,6 @@ body {
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     font-size: 1rem;
-    transition: all 0.2s ease;
 }
 
 .login-card .form-control:focus {
@@ -65,12 +88,6 @@ body {
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.login-card .btn-primary:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-1px);
 }
 
 .text-gradient {
@@ -80,24 +97,83 @@ body {
     background-clip: text;
 }
 
+/* Navbar styling - White background as per HTML */
 .navbar {
-    background-color: var(--primary-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 1rem;
+    background-color: white !important;
+    position: relative;
+    z-index: 1000;
 }
 
 .navbar-brand {
     font-weight: bold;
-    color: white !important;
+    color: var(--primary-color) !important;
+    z-index: 1001;
+    position: relative;
 }
 
-.nav-link {
-    color: rgba(255,255,255,0.9) !important;
-    transition: all 0.3s ease;
+.navbar-brand span {
+    color: var(--primary-color) !important;
 }
 
-.nav-link:hover {
-    color: var(--accent-color) !important;
+/* Make nav links PERMANENTLY VISIBLE - NO HOVER NEEDED */
+.navbar-nav {
+    position: relative;
+    z-index: 1000;
+}
+
+.navbar-nav .nav-item {
+    position: relative;
+    z-index: 1000;
+}
+
+.navbar-nav .nav-link {
+    color: #000000 !important;  /* Pure black - always visible */
+    transition: none !important;  /* Remove all transitions */
+    font-weight: 700 !important;  /* Extra bold */
+    font-size: 1.2rem !important;  /* Larger text */
+    display: inline-block !important;
+    position: relative;
+    z-index: 1000;
+    text-decoration: none !important;
+    background-color: #f8f9fa !important;  /* Light gray background always visible */
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 0.5rem !important;
+    border: 2px solid #dee2e6 !important;  /* Visible border */
+}
+
+.navbar-nav .nav-link i {
+    color: #000000 !important;  /* Black icons */
+}
+
+/* NO HOVER STYLES - Links are always visible without hover */
+
+.navbar-nav .nav-link.active {
+    color: #ffffff !important;  /* White text for active */
+    background-color: #2563eb !important;  /* Blue background for active */
+    border: 2px solid #2563eb !important;
+    font-weight: 800 !important;
+}
+
+/* Navbar on desktop - permanently visible */
+@media (min-width: 992px) {
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1.25rem !important;
+        color: #000000 !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        position: relative;
+        z-index: 1000;
+        background-color: #f8f9fa !important;
+        border: 2px solid #dee2e6 !important;
+    }
+    
+    .navbar-nav .nav-item {
+        margin: 0 0.25rem;
+        position: relative;
+        z-index: 1000;
+    }
 }
 
 main {
@@ -109,20 +185,10 @@ main {
     border-color: var(--accent-color);
 }
 
-.btn-primary:hover {
-    background-color: #2980b9;
-    border-color: #2980b9;
-}
-
 .card {
     border: none;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
 }
 
 .footer {
@@ -158,12 +224,6 @@ main {
 .footer a {
     color: rgba(255,255,255,0.9);
     text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.footer a:hover {
-    color: var(--accent-color);
-    text-decoration: none;
 }
 
 /* Dashboard specific styles */
@@ -184,12 +244,319 @@ main {
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+
+/* Mobile First - Extra Small Devices (phones, less than 576px) */
+@media (max-width: 575.98px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .login-card {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .login-card .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .stats-card {
+        margin-bottom: 1rem;
+        padding: 1rem !important;
+    }
+    
+    .table-responsive {
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-group .btn {
+        width: auto;
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.25rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Adjust navbar for mobile */
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    /* Mobile menu visibility fixes - MAXIMUM VISIBILITY */
+    .navbar-collapse {
+        background-color: white !important;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 999;
+    }
+    
+    .navbar-nav {
+        text-align: left;
+        width: 100%;
+        position: relative;
+        z-index: 999;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem !important;
+        display: block;
+        color: #000000 !important;  /* Pure black for mobile too */
+        border-bottom: 1px solid #e5e7eb;
+        min-height: 44px;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        position: relative;
+        z-index: 999;
+    }
+    
+    .navbar-nav .nav-link i {
+        color: #2563eb !important;  /* Blue icons */
+    }
+    
+    /* NO HOVER STYLES on mobile */
+    
+    .navbar-nav .nav-link.active {
+        background-color: #2563eb !important;
+        color: white !important;
+        border-radius: 0.25rem;
+    }
+    
+    .navbar-nav .nav-item {
+        width: 100%;
+        position: relative;
+        z-index: 999;
+    }
+    
+    /* Dropdown menu on mobile - NO HOVER */
+    .navbar-nav .dropdown-menu {
+        position: static !important;
+        float: none;
+        width: 100%;
+        margin-top: 0.5rem;
+        border: 2px solid #000000 !important;
+        background-color: #ffffff !important;
+        z-index: 1006;
+    }
+    
+    .navbar-nav .dropdown-item {
+        padding: 1rem 1rem !important;
+        color: #000000 !important;
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #000000 !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* NO HOVER STYLES for dropdown items */
+    
+    /* User avatar in mobile menu */
+    .navbar-nav .dropdown-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center !important;
+        padding: 1rem 1rem !important;
+        width: 100%;
+        color: #000000 !important;
+        background-color: #f8f9fa !important;
+        border: 2px solid #000000 !important;
+        border-radius: 0.5rem !important;
+        font-weight: 700 !important;
+        font-size: 1.2rem !important;
+    }
+    
+    /* Premium badge on mobile */
+    .navbar-nav .badge {
+        display: inline-block;
+        margin: 0.5rem 0;
+    }
+    
+    /* Hamburger toggler - HIGHLY VISIBLE */
+    .navbar-toggler {
+        border: 3px solid #000000 !important;  /* Black border */
+        background-color: #ffeb3b !important;  /* Bright yellow background */
+        padding: 0.75rem !important;
+        min-width: 50px !important;
+        min-height: 50px !important;
+        z-index: 1010;
+    }
+    
+    /* NO HOVER STYLES for hamburger toggler */
+    
+    /* Black hamburger icon */
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 0, 0, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        width: 2em !important;
+        height: 2em !important;
+    }
+    
+    /* Make forms more mobile friendly */
+    .form-control {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Stack buttons vertically */
+    .d-flex.gap-2 {
+        flex-direction: column !important;
+    }
+    
+    .d-flex.gap-2 > * {
+        width: 100% !important;
+    }
+    
+    /* Adjust modal for mobile */
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+    
+    /* Footer adjustments */
+    .footer {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Small Devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .login-card {
+        padding: 1.75rem;
+    }
+    
     .stats-card {
         margin-bottom: 1rem;
     }
     
     .table-responsive {
         margin-bottom: 1rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+}
+
+/* Medium Devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .container {
+        max-width: 720px;
+    }
+    
+    .login-card {
+        padding: 2rem;
+    }
+    
+    .stats-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Two column layout for cards */
+    .row .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Large Devices (desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+/* Extra Large Devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    .login-card {
+        padding: 3rem;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .btn {
+        min-height: 44px; /* iOS recommended touch target */
+        min-width: 44px;
+    }
+    
+    .nav-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Larger tap targets */
+    a, button, input, select, textarea {
+        min-height: 44px;
+    }
+}
+
+/* Landscape mobile orientation */
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-card {
+        padding: 1rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem auto;
+    }
+    
+    .navbar {
+        min-height: auto;
+    }
+}
+
+/* High DPI displays (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure images and icons look sharp */
+    img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    /* Add dark mode styles here if needed */
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from .models import Comments, CustomUser, Tutorial, Subscription, CurrencyPair, UserProgress
+from .models import Comments, CustomUser, Tutorial, Subscription, CurrencyPair, UserProgress, SubscriptionPlan
 from django.contrib.auth import logout, login, authenticate
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from datetime import timedelta
 from django.utils.decorators import method_decorator
 from functools import wraps
-from .form import MyCustomUserForm, TutorialForm
+from .form import MyCustomUserForm, TutorialForm, SubscriptionPlanForm
 import json
 
 from django.contrib.auth.decorators import user_passes_test
@@ -267,11 +267,15 @@ def mark_tutorial_complete(request, pk):
 
 @login_required
 def subscription_plans(request):
+    # Get active subscription plans from the database
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('duration_days')
+    
     context = {
         'current_subscription': Subscription.objects.filter(
             user=request.user,
             is_active=True
-        ).first()
+        ).first(),
+        'plans': plans,
     }
     return render(request, 'base/subscription_plans.html', context)
 
@@ -351,18 +355,27 @@ def initiate_payment(request):
 
 @csrf_exempt
 def mpesa_callback(request):
+    """
+    Handle M-Pesa STK Push callback
+    This endpoint receives payment notifications from Safaricom
+    """
     if request.method == 'POST':
         try:
             # Process the callback data
             data = json.loads(request.body)
             
+            # Log callback for debugging (remove in production)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f'M-Pesa Callback received: {data}')
+            
             # Validate required fields
             if not all(key in data for key in ['Body']):
-                return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+                return HttpResponse('OK')  # Return OK to acknowledge receipt
             
             callback = data.get('Body', {}).get('stkCallback', {})
             if not callback or 'ResultCode' not in callback:
-                return JsonResponse({'status': 'error', 'message': 'Invalid callback format'}, status=400)
+                return HttpResponse('OK')
             
             # Check if payment was successful
             if callback['ResultCode'] == 0:
@@ -397,32 +410,37 @@ def mpesa_callback(request):
                     
                     messages.success(request, 'Payment successful! Your subscription is now active.')
                     
-                return JsonResponse({'status': 'success'})
+                return HttpResponse('OK')
             else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Payment failed',
-                    'code': callback['ResultCode']
-                }, status=400)
+                # Payment failed or cancelled
+                logger.warning(f'Payment failed with code: {callback["ResultCode"]}')
+                return HttpResponse('OK')
             
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+            logger.error('Invalid JSON in M-Pesa callback')
+            return HttpResponse('OK')
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            logger.error(f'M-Pesa callback error: {str(e)}')
+            return HttpResponse('OK')
             
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    return HttpResponse('OK')
 
-@login_required
-def subscription_plans(request):
-    active_subscription = Subscription.objects.filter(
-        user=request.user, 
-        end_date__gt=timezone.now()
-    ).first()
-    
-    context = {
-        'active_subscription': active_subscription,
-    }
-    return render(request, 'base/subscription_plans.html', context)
+@csrf_exempt
+def mpesa_timeout(request):
+    """
+    Handle M-Pesa timeout notifications
+    Called when customer doesn't complete payment in time
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f'M-Pesa Timeout: {data}')
+            return HttpResponse('OK')
+        except Exception as e:
+            return HttpResponse('OK')
+    return HttpResponse('OK')
 
 @login_required
 def purchase_single_tutorial(request):
@@ -637,3 +655,213 @@ def delete_tutorial(request, tutorial_id):
             messages.error(request, f'Error deleting tutorial: {str(e)}')
             return redirect('dashboard')
     return HttpResponseRedirect(reverse('dashboard'))
+
+
+# Subscription Plan Management Views
+@superuser_required
+def manage_subscription_plans(request):
+    """View for superusers to manage subscription plans"""
+    plans = SubscriptionPlan.objects.all().order_by('duration_days')
+    
+    # Check if all three plan types exist
+    existing_plan_types = list(plans.values_list('name', flat=True))
+    all_plan_types = ['monthly', 'quarterly', 'yearly']
+    available_plan_types = [pt for pt in all_plan_types if pt not in existing_plan_types]
+    
+    context = {
+        'plans': plans,
+        'total_plans': plans.count(),
+        'active_plans': plans.filter(is_active=True).count(),
+        'can_create_more': len(available_plan_types) > 0,
+        'max_plans_reached': plans.count() >= 3,
+    }
+    
+    return render(request, 'base/manage_subscription_plans.html', context)
+
+
+@superuser_required
+def create_subscription_plan(request):
+    """Create new subscription plan"""
+    # Check if all three plans already exist
+    if SubscriptionPlan.objects.count() >= 3:
+        messages.warning(request, 'All three subscription plans (Monthly, Quarterly, Yearly) already exist. You can only edit existing plans.')
+        return redirect('manage_subscription_plans')
+    
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            plan = form.save()
+            messages.success(request, f'Subscription plan "{plan.get_name_display()}" created successfully!')
+            return redirect('manage_subscription_plans')
+        else:
+            # Display form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = SubscriptionPlanForm()
+    
+    return render(request, 'base/subscription_plan_form.html', {
+        'form': form,
+        'action': 'Create',
+    })
+
+
+@superuser_required
+def edit_subscription_plan(request, plan_id):
+    """Edit existing subscription plan"""
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            plan = form.save()
+            messages.success(request, f'Subscription plan "{plan.get_name_display()}" updated successfully!')
+            return redirect('manage_subscription_plans')
+    else:
+        form = SubscriptionPlanForm(instance=plan)
+    
+    return render(request, 'base/subscription_plan_form.html', {
+        'form': form,
+        'action': 'Edit',
+        'plan': plan,
+    })
+
+
+@superuser_required
+def delete_subscription_plan(request, plan_id):
+    """Delete subscription plan"""
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    plan_name = plan.get_name_display()
+    
+    plan.delete()
+    messages.success(request, f'Subscription plan "{plan_name}" deleted successfully!')
+    
+    return redirect('manage_subscription_plans')
+
+
+@superuser_required
+def toggle_plan_status(request, plan_id):
+    """Toggle subscription plan active status"""
+    plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+    plan.is_active = not plan.is_active
+    plan.save()
+    
+    status = "activated" if plan.is_active else "deactivated"
+    messages.success(request, f'Subscription plan "{plan.get_name_display()}" has been {status}!')
+    
+    return redirect('manage_subscription_plans')
+
+
+@superuser_required
+def manage_users(request):
+    """View all registered users with management options"""
+    users = CustomUser.objects.all().order_by('-date_joined')
+    
+    # Calculate stats for each user
+    user_stats = []
+    for user in users:
+        if not user.is_superuser:  # Don't show superuser accounts in the list
+            subscription = Subscription.objects.filter(user=user, is_active=True).first()
+            total_progress = UserProgress.objects.filter(user=user).count()
+            completed_tutorials = UserProgress.objects.filter(user=user, completed=True).count()
+            
+            # Calculate progress percentage for display
+            progress_percentage = 0
+            if total_progress > 0:
+                progress_percentage = int((completed_tutorials / total_progress) * 100)
+            
+            user_stats.append({
+                'user': user,
+                'subscription': subscription,
+                'total_progress': total_progress,
+                'completed_tutorials': completed_tutorials,
+                'progress_percentage': progress_percentage,
+                'is_active': user.is_active,
+            })
+    
+    context = {
+        'user_stats': user_stats,
+        'total_users': len(user_stats),
+        'active_users': sum(1 for stat in user_stats if stat['is_active']),
+        'inactive_users': sum(1 for stat in user_stats if not stat['is_active']),
+        'subscribed_users': sum(1 for stat in user_stats if stat['subscription']),
+    }
+    
+    return render(request, 'base/manage_users.html', context)
+
+
+@superuser_required
+def toggle_user_status(request, user_id):
+    """Activate or deactivate a user account"""
+    user = get_object_or_404(CustomUser, id=user_id)
+    
+    # Prevent superuser from deactivating themselves
+    if user.id == request.user.id:
+        messages.error(request, "You cannot deactivate your own account!")
+        return redirect('manage_users')
+    
+    # Prevent deactivating other superusers
+    if user.is_superuser:
+        messages.error(request, "You cannot deactivate other superuser accounts!")
+        return redirect('manage_users')
+    
+    user.is_active = not user.is_active
+    user.save()
+    
+    status = "activated" if user.is_active else "deactivated"
+    messages.success(request, f'User "{user.fullname}" ({user.email}) has been {status}!')
+    
+    return redirect('manage_users')
+
+
+@superuser_required
+def delete_user(request, user_id):
+    """Delete a user account permanently"""
+    user = get_object_or_404(CustomUser, id=user_id)
+    
+    # Prevent superuser from deleting themselves
+    if user.id == request.user.id:
+        messages.error(request, "You cannot delete your own account!")
+        return redirect('manage_users')
+    
+    # Prevent deleting other superusers
+    if user.is_superuser:
+        messages.error(request, "You cannot delete other superuser accounts!")
+        return redirect('manage_users')
+    
+    user_name = user.fullname
+    user_email = user.email
+    user.delete()
+    
+    messages.success(request, f'User "{user_name}" ({user_email}) has been permanently deleted!')
+    
+    return redirect('manage_users')
+
+
+@superuser_required
+def user_detail(request, user_id):
+    """View detailed information about a specific user"""
+    user = get_object_or_404(CustomUser, id=user_id)
+    
+    # Get user's subscription info
+    current_subscription = Subscription.objects.filter(user=user, is_active=True).first()
+    subscription_history = Subscription.objects.filter(user=user).order_by('-start_date')
+    
+    # Get user's tutorial progress
+    user_progress = UserProgress.objects.filter(user=user).select_related('tutorial')
+    completed_count = user_progress.filter(completed=True).count()
+    total_tutorials = Tutorial.objects.count()
+    completion_percentage = (completed_count / total_tutorials * 100) if total_tutorials > 0 else 0
+    
+    context = {
+        'viewed_user': user,
+        'current_subscription': current_subscription,
+        'subscription_history': subscription_history,
+        'user_progress': user_progress,
+        'completed_count': completed_count,
+        'total_tutorials': total_tutorials,
+        'completion_percentage': completion_percentage,
+    }
+    
+    return render(request, 'base/user_detail.html', context)

@@ -22,6 +22,8 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar_force_visible.css' %}">
 
     <!-- plyr.io for better video playback -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
@@ -219,6 +221,9 @@
 
     <!-- Video Player Scripts -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    
+    <!-- Navbar Mobile Menu Script -->
+    <script src="{% static 'js/navbar.js' %}"></script>
     
     <!-- Tutorial Management Scripts -->
     {% if user.is_superuser %}

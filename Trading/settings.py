@@ -157,15 +157,48 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django Daraja (M-Pesa) Settings
-# For sandbox testing - replace with production values for live environment
-MPESA_ENVIRONMENT = 'sandbox'  # Change to 'production' for live
-MPESA_CONSUMER_KEY = 'your_consumer_key'  # Replace with actual key
-MPESA_CONSUMER_SECRET = 'your_consumer_secret'  # Replace with actual secret
-MPESA_SHORTCODE = '174379'  # Test shortcode - replace with actual
-MPESA_EXPRESS_SHORTCODE = '174379'  # Test shortcode
-MPESA_SHORTCODE_TYPE = 'paybill'  # or 'till_number'
-MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'  # Test passkey
-MPESA_INITIATOR_USERNAME = 'testapi'  # Test initiator
-MPESA_INITIATOR_SECURITY_CREDENTIAL = 'your_security_credential'
+# ============================================
+# M-PESA CONFIGURATION (Django Daraja)
+# ============================================
+# 
+# SANDBOX SETUP (For Testing):
+# - Use these values for development and testing
+# - No real money is involved
+# - Test phone: 254708374149
+#
+# PRODUCTION SETUP (When You Get PayBill):
+# 1. Change MPESA_ENVIRONMENT to 'production'
+# 2. Replace MPESA_CONSUMER_KEY with your production key
+# 3. Replace MPESA_CONSUMER_SECRET with your production secret
+# 4. Replace MPESA_SHORTCODE with YOUR PayBill number
+# 5. Replace MPESA_PASSKEY with your production passkey
+# 6. Update MPESA_CALLBACK_URL with your live domain
+#
+# Get Production Credentials:
+# - Visit https://developer.safaricom.co.ke/
+# - Create production app
+# - Copy Consumer Key & Secret
+# - Get PassKey from Safaricom Business Team
+# ============================================
+
+# Current Environment (Change to 'production' when going live)
+MPESA_ENVIRONMENT = 'sandbox'
+
+# Sandbox Credentials (Replace when you get PayBill)
+MPESA_CONSUMER_KEY = 'your_consumer_key_here'  # TODO: Replace with actual key
+MPESA_CONSUMER_SECRET = 'your_consumer_secret_here'  # TODO: Replace with actual secret
+MPESA_SHORTCODE = '174379'  # Sandbox test shortcode | TODO: Replace with YOUR PayBill number
+MPESA_EXPRESS_SHORTCODE = '174379'  # Same as shortcode
+MPESA_SHORTCODE_TYPE = 'paybill'  # Keep as 'paybill'
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'  # Sandbox passkey | TODO: Replace
+MPESA_INITIATOR_USERNAME = 'testapi'  # TODO: Replace with your initiator name
+MPESA_INITIATOR_SECURITY_CREDENTIAL = 'your_security_credential'  # TODO: Replace
+
+# Callback URL (IMPORTANT: Update when deploying)
+# For local testing, use ngrok: https://ngrok.com/
+# Example: MPESA_CALLBACK_URL = 'https://abc123.ngrok.io/mpesa/callback/'
+MPESA_CALLBACK_URL = 'https://yourdomain.com/mpesa/callback/'  # TODO: Update with your domain
+
+# Transaction timeout (in seconds)
+MPESA_TIMEOUT_URL = 'https://yourdomain.com/mpesa/timeout/'  # TODO: Update with your domain
 

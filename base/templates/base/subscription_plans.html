@@ -22,72 +22,40 @@
     </div>
     {% endif %}
 
+    {% if plans %}
     <div class="row g-4 justify-content-center">
-        <!-- Monthly Plan -->
+        {% for plan in plans %}
         <div class="col-md-4">
-            <div class="card h-100 plan-card" id="monthly">
+            <div class="card h-100 plan-card {% if plan.name == 'quarterly' %}border-primary{% endif %}" id="{{ plan.name }}">
                 <div class="card-body d-flex flex-column">
                     <div class="text-center mb-4">
-                        <div class="display-6 fw-bold text-primary mb-0">Monthly</div>
-                        <div class="price mt-3">
-                            <span class="h1 fw-bold">Ksh 999</span>
-                            <span class="text-muted">/month</span>
-                        </div>
-                    </div>
-                    
-                    <ul class="features mb-4">
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Full access to tutorials</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Real-time forex charts</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Basic trading strategies</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Community access</li>
-                    </ul>
-                    
-                    <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
-                        {% csrf_token %}
-                        <input type="hidden" name="subscription_type" value="monthly">
-                        <input type="hidden" name="amount" value="999">
-                        <div class="form-group mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                <input type="tel" name="phone_number" class="form-control" 
-                                       placeholder="254XXXXXXXXX" pattern="254[0-9]{9}" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-shopping-cart me-2"></i>Subscribe Now
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quarterly Plan (Featured) -->
-        <div class="col-md-4">
-            <div class="card h-100 plan-card border-primary" id="quarterly">
-                <div class="card-body d-flex flex-column">
-                    <div class="text-center mb-4">
+                        {% if plan.name == 'quarterly' %}
                         <div class="badge bg-primary mb-2">MOST POPULAR</div>
-                        <div class="display-6 fw-bold text-primary mb-0">Quarterly</div>
+                        {% endif %}
+                        <div class="display-6 fw-bold text-primary mb-0">{{ plan.get_name_display }}</div>
                         <div class="price mt-3">
-                            <span class="h1 fw-bold">Ksh 2,499</span>
-                            <span class="text-muted">/quarter</span>
-                        </div>
-                        <div class="text-success small mt-2">
-                            <i class="fas fa-tag me-1"></i>Save 16%
+                            <span class="h1 fw-bold">KSh {{ plan.price_ksh|floatformat:2 }}</span>
+                            <span class="text-muted">/{{ plan.duration_days }} days</span>
                         </div>
                     </div>
                     
-                    <ul class="features mb-4">
-                        <li><i class="fas fa-check-circle text-success me-2"></i>All Monthly features</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Advanced trading strategies</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Priority support</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Weekly market analysis</li>
-                    </ul>
+                    <div class="mb-4">
+                        {% if plan.description %}
+                        <div class="text-muted small">{{ plan.description|linebreaks }}</div>
+                        {% else %}
+                        <ul class="features">
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Full access to tutorials</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Real-time forex charts</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Trading strategies</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Community access</li>
+                        </ul>
+                        {% endif %}
+                    </div>
                     
                     <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
                         {% csrf_token %}
-                        <input type="hidden" name="subscription_type" value="quarterly">
-                        <input type="hidden" name="amount" value="2499">
+                        <input type="hidden" name="subscription_type" value="{{ plan.name }}">
+                        <input type="hidden" name="amount" value="{{ plan.price_ksh }}">
                         <div class="form-group mb-3">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-phone"></i></span>
@@ -102,49 +70,18 @@
                 </div>
             </div>
         </div>
-
-        <!-- Yearly Plan -->
-        <div class="col-md-4">
-            <div class="card h-100 plan-card" id="yearly">
-                <div class="card-body d-flex flex-column">
-                    <div class="text-center mb-4">
-                        <div class="display-6 fw-bold text-primary mb-0">Yearly</div>
-                        <div class="price mt-3">
-                            <span class="h1 fw-bold">Ksh 7,999</span>
-                            <span class="text-muted">/year</span>
-                        </div>
-                        <div class="text-success small mt-2">
-                            <i class="fas fa-tag me-1"></i>Save 33%
-                        </div>
-                    </div>
-                    
-                    <ul class="features mb-4">
-                        <li><i class="fas fa-check-circle text-success me-2"></i>All Quarterly features</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>One-on-one mentorship</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Trading signals access</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Exclusive webinars</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>VIP community access</li>
-                    </ul>
-                    
-                    <form action="{% url 'initiate_payment' %}" method="post" class="mt-auto">
-                        {% csrf_token %}
-                        <input type="hidden" name="subscription_type" value="yearly">
-                        <input type="hidden" name="amount" value="7999">
-                        <div class="form-group mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                <input type="tel" name="phone_number" class="form-control" 
-                                       placeholder="254XXXXXXXXX" pattern="254[0-9]{9}" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-shopping-cart me-2"></i>Subscribe Now
-                        </button>
-                    </form>
-                </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                No subscription plans are currently available. Please check back later.
             </div>
         </div>
     </div>
+    {% endif %}
 
     <div class="row mt-5">
         <div class="col-lg-8 mx-auto">

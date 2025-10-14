@@ -1,0 +1,358 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    .user-avatar-large {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 2rem;
+    }
+    .info-card {
+        border-left: 4px solid #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-user me-2"></i>User Details</h2>
+                    <p class="text-muted">Detailed information about {{ viewed_user.fullname }}</p>
+                </div>
+                <a href="{% url 'manage_users' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="user-avatar-large mx-auto mb-3">
+                        {{ viewed_user.fullname|first|upper }}
+                    </div>
+                    <h4 class="mb-1">{{ viewed_user.fullname }}</h4>
+                    <p class="text-muted mb-3">{{ viewed_user.email }}</p>
+                    
+                    {% if viewed_user.is_active %}
+                        <span class="badge bg-success mb-3">
+                            <i class="fas fa-check-circle me-1"></i>Active Account
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger mb-3">
+                            <i class="fas fa-ban me-1"></i>Inactive Account
+                        </span>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <form action="{% url 'toggle_user_status' viewed_user.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-{% if viewed_user.is_active %}warning{% else %}success{% endif %} w-100">
+                                <i class="fas fa-{% if viewed_user.is_active %}ban{% else %}check{% endif %} me-2"></i>
+                                {% if viewed_user.is_active %}Deactivate{% else %}Activate{% endif %} Account
+                            </button>
+                        </form>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                            <i class="fas fa-trash me-2"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Full Name</small>
+                                <strong>{{ viewed_user.fullname }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Email Address</small>
+                                <strong>{{ viewed_user.email }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Date Joined</small>
+                                <strong>{{ viewed_user.date_joined|date:"F j, Y" }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Last Login</small>
+                                <strong>
+                                    {% if viewed_user.last_login %}
+                                        {{ viewed_user.last_login|date:"F j, Y g:i A" }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Account Status</small>
+                                <strong>
+                                    {% if viewed_user.is_active %}
+                                        <span class="text-success">Active</span>
+                                    {% else %}
+                                        <span class="text-danger">Inactive</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Subscription Status</small>
+                                <strong>
+                                    {% if current_subscription %}
+                                        <span class="text-success">
+                                            <i class="fas fa-crown me-1"></i>Premium
+                                        </span>
+                                    {% else %}
+                                        <span class="text-secondary">Free</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Information -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-crown me-2"></i>Subscription Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_subscription %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <small class="text-muted d-block">Plan Type</small>
+                                    <strong>{{ current_subscription.subscription_type|capfirst }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <small class="text-muted d-block">Start Date</small>
+                                    <strong>{{ current_subscription.start_date|date:"M d, Y" }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <small class="text-muted d-block">End Date</small>
+                                    <strong>{{ current_subscription.end_date|date:"M d, Y" }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <small class="text-muted d-block">Status</small>
+                                    <strong class="text-success">Active</strong>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-crown fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">This user does not have an active subscription.</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if subscription_history %}
+                        <h6 class="mt-4 mb-3"><i class="fas fa-history me-2"></i>Subscription History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Plan</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub in subscription_history %}
+                                    <tr>
+                                        <td>{{ sub.subscription_type|capfirst }}</td>
+                                        <td>{{ sub.start_date|date:"M d, Y" }}</td>
+                                        <td>{{ sub.end_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if sub.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Expired</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tutorial Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block">Total Tutorials</small>
+                                <h3 class="mb-0">{{ total_tutorials }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block">Completed</small>
+                                <h3 class="mb-0 text-success">{{ completed_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted d-block">Completion Rate</small>
+                                <h3 class="mb-0 text-primary">{{ completion_percentage|floatformat:1 }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if user_progress %}
+                        <h6 class="mb-3"><i class="fas fa-list me-2"></i>Tutorial Details</h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tutorial</th>
+                                        <th>Progress</th>
+                                        <th>Status</th>
+                                        <th>Last Viewed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for progress in user_progress %}
+                                    <tr>
+                                        <td>{{ progress.tutorial.title }}</td>
+                                        <td>
+                                            <div class="progress" style="width: 150px; height: 20px;">
+                                                {% if progress.completed %}
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: 100%">
+                                                    100%
+                                                </div>
+                                                {% else %}
+                                                <div class="progress-bar bg-primary" 
+                                                     role="progressbar" 
+                                                     style="width: 50%">
+                                                    50%
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if progress.completed %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Completed
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>In Progress
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ progress.started_at|date:"M d, Y" }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">This user has not started any tutorials yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm User Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently delete this user?</p>
+                <div class="alert alert-info">
+                    <strong>{{ viewed_user.fullname }}</strong><br>
+                    <small class="text-muted">{{ viewed_user.email }}</small>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone and will permanently delete all user data.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'delete_user' viewed_user.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

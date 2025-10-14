@@ -30,8 +30,8 @@
                                     </p>
                                     <div class="d-flex justify-content-center gap-3">
                                         <span class="badge bg-warning fs-6 px-3 py-2">
-                                            <i class="fas fa-dollar-sign me-1"></i>
-                                            ${{ tutorial.price|floatformat:2 }}
+                                            <i class="fas fa-money-bill me-1"></i>
+                                            KSh {{ tutorial.price|floatformat:0 }}
                                         </span>
                                         <span class="badge bg-info fs-6 px-3 py-2">
                                             <i class="fas fa-clock me-1"></i>
@@ -41,7 +41,7 @@
                                     <div class="mt-4">
                                         <button type="button" class="btn btn-warning btn-lg me-3" data-bs-toggle="modal" data-bs-target="#purchaseModal">
                                             <i class="fas fa-shopping-cart me-2"></i>
-                                            Purchase This Tutorial - ${{ tutorial.price|floatformat:2 }}
+                                            Purchase This Tutorial - KSh {{ tutorial.price|floatformat:0 }}
                                         </button>
                                         <a href="{% url 'subscription_plans' %}" class="btn btn-outline-light">
                                             <i class="fas fa-crown me-2"></i>
@@ -145,7 +145,7 @@
                         </div>
                         <div class="price-display">
                             <span class="text-muted">Price:</span>
-                            <span class="h4 text-success ms-2">${{ tutorial.price|floatformat:2 }}</span>
+                            <span class="h4 text-success ms-2">KSh {{ tutorial.price|floatformat:0 }}</span>
                         </div>
                     </div>
                     
@@ -185,8 +185,8 @@
                         Cancel
                     </button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-credit-card me-2"></i>
-                        Pay ${{ tutorial.price|floatformat:2 }} Now
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        Pay KSh {{ tutorial.price|floatformat:0 }} via M-Pesa
                     </button>
                 </div>
             </form>

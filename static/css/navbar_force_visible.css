@@ -1,0 +1,167 @@
+/* CLEAN & PROFESSIONAL: Force navbar links to be visible with good design */
+
+/* Make links visible with clean, modern styling */
+.navbar .nav-link,
+.navbar-nav .nav-link,
+nav .nav-link,
+.nav-link,
+a.nav-link {
+    color: #1e293b !important;  /* Dark slate gray - very readable */
+    background-color: transparent !important;
+    font-weight: 600 !important;  /* Semi-bold, not too heavy */
+    font-size: 1rem !important;  /* Normal size */
+    padding: 0.5rem 1rem !important;
+    margin: 0 0.25rem !important;
+    border: none !important;
+    border-radius: 0.375rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-block !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    z-index: 1000 !important;
+    position: relative !important;
+}
+
+/* Subtle hover effect for better UX */
+.navbar .nav-link:hover,
+.navbar-nav .nav-link:hover {
+    background-color: #f1f5f9 !important;  /* Very light gray on hover */
+    color: #2563eb !important;  /* Blue on hover */
+}
+
+/* Active link styling */
+.navbar .nav-link.active,
+.navbar-nav .nav-link.active {
+    color: #2563eb !important;  /* Blue for active page */
+    background-color: #eff6ff !important;  /* Very light blue background */
+    font-weight: 600 !important;
+}
+
+/* Desktop specific */
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-nav .nav-link {
+        color: #1e293b !important;
+        background-color: transparent !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        padding: 0.5rem 1rem !important;
+        display: inline-block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    .navbar-expand-lg .navbar-nav .nav-link:hover {
+        background-color: #f1f5f9 !important;
+        color: #2563eb !important;
+    }
+}
+
+/* Mobile specific - Clean list style */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #ffffff !important;
+        padding: 1rem !important;
+        border-radius: 0.5rem !important;
+        margin-top: 0.5rem !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .navbar-collapse .navbar-nav .nav-link {
+        color: #1e293b !important;
+        background-color: transparent !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        padding: 0.75rem 1rem !important;
+        border: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        text-align: left !important;
+    }
+    
+    .navbar-collapse .navbar-nav .nav-link:last-child {
+        border-bottom: none !important;
+    }
+    
+    .navbar-collapse .navbar-nav .nav-link:hover,
+    .navbar-collapse .navbar-nav .nav-link:active {
+        background-color: #f1f5f9 !important;
+        color: #2563eb !important;
+    }
+}
+
+/* Hamburger button - Professional styling */
+.navbar-toggler {
+    border: 1px solid #cbd5e1 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 0.375rem !important;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Dropdown menu styling */
+.navbar-nav .dropdown-menu {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0.5rem !important;
+}
+
+.navbar-nav .dropdown-item {
+    color: #1e293b !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: 500 !important;
+}
+
+.navbar-nav .dropdown-item:hover {
+    background-color: #f1f5f9 !important;
+    color: #2563eb !important;
+}
+
+/* Brand styling */
+.navbar-brand {
+    font-weight: 700 !important;
+    color: #2563eb !important;
+    font-size: 1.25rem !important;
+}
+
+/* Premium badge */
+.navbar-nav .badge {
+    font-weight: 600 !important;
+    padding: 0.25rem 0.75rem !important;
+}
+
+/* User avatar circle - Keep it perfectly circular */
+.navbar-nav .rounded-circle,
+.navbar-nav .dropdown-toggle .rounded-circle,
+div.rounded-circle.bg-primary {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    margin-right: 0.5rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    aspect-ratio: 1 / 1 !important;
+}
+
+/* Dropdown toggle containing the avatar */
+.navbar-nav .dropdown-toggle {
+    padding: 0.5rem 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+}
