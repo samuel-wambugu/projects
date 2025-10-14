@@ -1,0 +1,241 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'tutorial_list' %}">Tutorials</a></li>
+                    <li class="breadcrumb-item active">{{ tutorial.title }}</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">{{ tutorial.title }}</h2>
+                    
+                    <!-- Video Player Section -->
+                    {% if show_purchase_modal %}
+                        <!-- Premium Content Purchase Section -->
+                        <div class="video-container mb-4">
+                            <div class="card bg-gradient-primary text-white">
+                                <div class="card-body text-center py-5">
+                                    <i class="fas fa-lock fa-4x mb-4 opacity-75"></i>
+                                    <h3 class="card-title">Premium Content</h3>
+                                    <p class="card-text fs-5 mb-4">
+                                        This tutorial requires payment to access
+                                    </p>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <span class="badge bg-warning fs-6 px-3 py-2">
+                                            <i class="fas fa-dollar-sign me-1"></i>
+                                            ${{ tutorial.price|floatformat:2 }}
+                                        </span>
+                                        <span class="badge bg-info fs-6 px-3 py-2">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ tutorial.duration }} min
+                                        </span>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-warning btn-lg me-3" data-bs-toggle="modal" data-bs-target="#purchaseModal">
+                                            <i class="fas fa-shopping-cart me-2"></i>
+                                            Purchase This Tutorial - ${{ tutorial.price|floatformat:2 }}
+                                        </button>
+                                        <a href="{% url 'subscription_plans' %}" class="btn btn-outline-light">
+                                            <i class="fas fa-crown me-2"></i>
+                                            View Subscription Plans
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="video-container mb-4">
+                            {% if tutorial.video %}
+                                <video class="w-100" controls controlsList="nodownload" style="max-height: 70vh;">
+                                    <source src="{{ tutorial.video.url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% elif tutorial.video_url %}
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="{{ tutorial.video_url }}"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No video content available for this tutorial.
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        {% if prev_tutorial %}
+                            <a href="{% url 'tutorial_detail' prev_tutorial.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left"></i> Previous Tutorial
+                            </a>
+                        {% else %}
+                            <div></div>
+                        {% endif %}
+                        
+                        {% if next_tutorial %}
+                            <a href="{% url 'tutorial_detail' next_tutorial.pk %}" class="btn btn-outline-primary">
+                                Next Tutorial <i class="fas fa-arrow-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tutorial Content -->
+                    <div class="tutorial-content mb-4">
+                        {{ tutorial.content|linebreaks }}
+                    </div>
+
+                    <!-- Tutorial Progress -->
+                    {% if not show_purchase_modal %}
+                    <div class="progress-section">
+                        {% if not progress.completed %}
+                            <form method="post" action="{% url 'mark_tutorial_complete' tutorial.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check-circle"></i> Mark as Complete
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> You have completed this tutorial on {{ progress.completion_date|date:"F j, Y" }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Purchase Modal -->
+{% if show_purchase_modal %}
+<div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="purchaseModalLabel">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Purchase Tutorial
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'purchase_single_tutorial' %}">
+                {% csrf_token %}
+                <input type="hidden" name="tutorial_id" value="{{ tutorial.id }}">
+                
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <h6 class="text-muted">Tutorial</h6>
+                        <h5>{{ tutorial.title }}</h5>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-primary">{{ tutorial.category }}</span>
+                            <span class="badge bg-info">{{ tutorial.duration }} min</span>
+                        </div>
+                        <div class="price-display">
+                            <span class="text-muted">Price:</span>
+                            <span class="h4 text-success ms-2">${{ tutorial.price|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-form">
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">
+                                <i class="fas fa-phone me-2"></i>
+                                M-Pesa Phone Number
+                            </label>
+                            <input type="tel" 
+                                   class="form-control" 
+                                   id="phoneNumber" 
+                                   name="phone_number" 
+                                   placeholder="254XXXXXXXXX or 07XXXXXXXX" 
+                                   required>
+                            <div class="form-text">
+                                Enter your Safaricom number to receive the payment prompt
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>
+                                <strong>How it works:</strong><br>
+                                1. Enter your M-Pesa number<br>
+                                2. Click "Pay Now" to receive STK push<br>
+                                3. Enter your M-Pesa PIN on your phone<br>
+                                4. Instant access to the tutorial upon payment
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Pay ${{ tutorial.price|floatformat:2 }} Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Phone number validation and formatting
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('phoneNumber');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            // Auto-format phone number
+            if (value.startsWith('0')) {
+                value = '254' + value.substring(1);
+            } else if (!value.startsWith('254') && value.length > 0) {
+                if (value.length <= 9) {
+                    value = '254' + value;
+                }
+            }
+            
+            // Limit to 12 digits (254XXXXXXXXX)
+            if (value.length > 12) {
+                value = value.substring(0, 12);
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Validate on form submit
+        const form = phoneInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const phone = phoneInput.value;
+                if (!phone.match(/^254[0-9]{9}$/)) {
+                    e.preventDefault();
+                    alert('Please enter a valid Safaricom number (254XXXXXXXXX)');
+                    phoneInput.focus();
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

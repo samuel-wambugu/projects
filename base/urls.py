@@ -20,12 +20,13 @@ urlpatterns = [
     path('tutorials/<int:pk>/complete/', views.mark_tutorial_complete, name='mark_tutorial_complete'),
     
     # Admin URLs
-    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('tutorials/create/', views.create_tutorial, name='create_tutorial'),
+    path('tutorials/<int:tutorial_id>/delete/', views.delete_tutorial, name='delete_tutorial'),
     
     # Subscription URLs
     path('subscriptions/', views.subscription_plans, name='subscription_plans'),
     path('subscriptions/payment/', views.initiate_payment, name='initiate_payment'),
+    path('tutorials/purchase/', views.purchase_single_tutorial, name='purchase_single_tutorial'),
     
     # Forex URLs
     path('forex/', views.forex_dashboard, name='forex_dashboard'),

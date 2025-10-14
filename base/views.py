@@ -92,7 +92,7 @@ def home(request):
 def dashboard(request):
     user = request.user
     subscription = Subscription.objects.filter(user=user, is_active=True).first()
-    tutorials = Tutorial.objects.all()
+    tutorials = Tutorial.objects.all().order_by('order')  # Ensure consistent ordering
     currency_pairs = CurrencyPair.objects.all()
     user_progress = UserProgress.objects.filter(user=user)
     
@@ -110,6 +110,41 @@ def dashboard(request):
         'total_tutorials': total_tutorials,
         'completed_tutorials': completed_tutorials,
     }
+    
+    # Add superuser-specific context
+    if user.is_superuser:
+        # Get engagement metrics
+        total_users = CustomUser.objects.count()
+        total_students = UserProgress.objects.values('user').distinct().count()
+        active_subscriptions = Subscription.objects.filter(is_active=True).count()
+        total_earnings = sum(tutorial.price for tutorial in tutorials if not tutorial.free_access)
+        all_user_progress = UserProgress.objects.all()
+        
+        # Calculate overall platform engagement
+        total_completions = all_user_progress.filter(completed=True).count()
+        avg_completion_rate = (total_completions / (total_users * total_tutorials) * 100) if total_users > 0 and total_tutorials > 0 else 0
+        
+        # Get tutorial-specific engagement
+        tutorial_stats = []
+        for tutorial in tutorials:
+            completions = all_user_progress.filter(tutorial=tutorial, completed=True).count()
+            completion_rate = (completions / total_users * 100) if total_users > 0 else 0
+            tutorial_stats.append({
+                'tutorial': tutorial,
+                'completions': completions,
+                'completion_rate': completion_rate,
+            })
+        
+        # Add superuser context
+        context.update({
+            'total_users': total_users,
+            'total_students': total_students,
+            'active_subscriptions': active_subscriptions,
+            'total_earnings': total_earnings,
+            'avg_completion_rate': avg_completion_rate,
+            'tutorial_stats': tutorial_stats,
+            'show_all_tutorials': True,  # Flag to show all tutorials regardless of subscription
+        })
     return render(request, 'base/dashboard.html', context)
 
 def loginfunc(request):
@@ -156,9 +191,8 @@ def tutorial_list(request):
     user_progress = UserProgress.objects.filter(user=request.user)
     subscription = Subscription.objects.filter(user=request.user, is_active=True).first()
     
-    # Filter tutorials based on subscription
-    if not subscription:
-        tutorials = tutorials.filter(free_access=True)
+    # Show all tutorials in the list (so users can see what's available)
+    # Access control is handled in individual tutorial detail views
     
     context = {
         'tutorials': tutorials,
@@ -172,10 +206,27 @@ def tutorial_detail(request, pk):
     tutorial = get_object_or_404(Tutorial, pk=pk)
     subscription = Subscription.objects.filter(user=request.user, is_active=True).first()
     
-    # Check access permission
-    if not tutorial.free_access and not subscription:
-        messages.error(request, "Please subscribe to access this tutorial")
-        return redirect('subscription_plans')
+    # Check access permission - Premium tutorials require subscription or payment
+    # For now, we'll just check if tutorial costs money and user doesn't have subscription
+    # TODO: Add individual purchase tracking model later
+    
+    if not request.user.is_superuser and tutorial.price > 0 and not tutorial.free_access and not subscription:
+        # Instead of redirecting, show the tutorial with purchase modal
+        print(f"DEBUG: Showing purchase modal for {tutorial.title}, Price: {tutorial.price}, User: {request.user}")  # Debug line
+        
+        # Get next and previous tutorials for navigation
+        next_tutorial = Tutorial.objects.filter(id__gt=tutorial.id).order_by('id').first()
+        prev_tutorial = Tutorial.objects.filter(id__lt=tutorial.id).order_by('-id').first()
+        
+        context = {
+            'tutorial': tutorial,
+            'show_purchase_modal': True,
+            'subscription': subscription,
+            'next_tutorial': next_tutorial,
+            'prev_tutorial': prev_tutorial,
+            'is_superuser': request.user.is_superuser
+        }
+        return render(request, 'base/tutorial_detail.html', context)
     
     # Track progress
     progress, created = UserProgress.objects.get_or_create(
@@ -186,9 +237,17 @@ def tutorial_detail(request, pk):
         progress.last_accessed = timezone.now()
         progress.save()
     
+    # Get next and previous tutorials
+    next_tutorial = Tutorial.objects.filter(id__gt=tutorial.id).order_by('id').first()
+    prev_tutorial = Tutorial.objects.filter(id__lt=tutorial.id).order_by('-id').first()
+    
     context = {
         'tutorial': tutorial,
-        'progress': progress
+        'progress': progress,
+        'next_tutorial': next_tutorial,
+        'prev_tutorial': prev_tutorial,
+        'subscription': subscription,
+        'is_superuser': request.user.is_superuser
     }
     return render(request, 'base/tutorial_detail.html', context)
 
@@ -219,8 +278,8 @@ def subscription_plans(request):
 @login_required
 def forex_dashboard(request):
     # Fetch latest forex data
-    from .services import fetch_forex_data
-    fetch_forex_data()
+    # from .services import fetch_forex_data
+    # fetch_forex_data()  # Temporarily disabled - requires yfinance
     
     # Get all currency pairs
     currency_pairs = CurrencyPair.objects.all().order_by('base_currency')
@@ -232,20 +291,13 @@ def forex_dashboard(request):
 
 @login_required
 def forex_chart(request, pair_id):
-    from .services import get_forex_chart_data
-    
-from django.contrib.auth.decorators import login_required
-
-
-
-@login_required
-def forex_chart(request, pair_id):
-    from .services import get_forex_chart_data
+    # from .services import get_forex_chart_data  # Temporarily disabled - requires yfinance
     
     pair = get_object_or_404(CurrencyPair, id=pair_id)
     timeframe = request.GET.get('timeframe', '1mo')
     
-    chart_data = get_forex_chart_data(pair_id, timeframe)
+    # chart_data = get_forex_chart_data(pair_id, timeframe)  # Temporarily disabled
+    chart_data = {}  # Empty chart data for now
     
     context = {
         'pair': pair,
@@ -372,6 +424,67 @@ def subscription_plans(request):
     }
     return render(request, 'base/subscription_plans.html', context)
 
+@login_required
+def purchase_single_tutorial(request):
+    """Handle individual tutorial purchases via M-Pesa"""
+    if request.method == 'POST':
+        tutorial_id = request.POST.get('tutorial_id')
+        phone_number = request.POST.get('phone_number')
+        
+        if not tutorial_id or not phone_number:
+            messages.error(request, 'Please provide all required information')
+            return redirect('tutorial_detail', pk=tutorial_id or 1)
+        
+        try:
+            tutorial = get_object_or_404(Tutorial, id=tutorial_id)
+            
+            if not MPESA_ENABLED:
+                messages.error(request, 'Payment system is currently unavailable')
+                return redirect('tutorial_detail', pk=tutorial_id)
+            
+            # Process M-Pesa payment
+            cl = MpesaClient()
+            phone_number = phone_number.replace('+', '').strip()
+            
+            # Ensure phone number is in correct format
+            if not phone_number.startswith('254'):
+                if phone_number.startswith('0'):
+                    phone_number = '254' + phone_number[1:]
+                else:
+                    phone_number = '254' + phone_number
+            
+            # Initiate STK push for individual tutorial
+            account_reference = f"Tutorial_{tutorial.id}_{request.user.id}"
+            transaction_desc = f"Purchase: {tutorial.title}"
+            
+            response = cl.stk_push(
+                phone_number=phone_number,
+                amount=int(tutorial.price),
+                account_reference=account_reference,
+                transaction_desc=transaction_desc,
+                callback_url="https://yourdomain.com/mpesa/callback/"  # Update with your actual domain
+            )
+            
+            if response and response.get('ResponseCode') == '0':
+                messages.success(request, f'Payment request sent to {phone_number}. Please complete the payment on your phone.')
+                
+                # Store pending payment info (you might want to create a PendingPayment model)
+                # For now, we'll use session storage
+                request.session[f'pending_tutorial_purchase_{tutorial.id}'] = {
+                    'phone_number': phone_number,
+                    'amount': float(tutorial.price),
+                    'timestamp': timezone.now().isoformat()
+                }
+            else:
+                messages.error(request, 'Failed to initiate payment. Please try again.')
+                
+        except Tutorial.DoesNotExist:
+            messages.error(request, 'Tutorial not found')
+        except Exception as e:
+            messages.error(request, f'Payment processing error: {str(e)}')
+    
+    return redirect('tutorial_detail', pk=tutorial_id)
+
 def register(request):
     
     if request.method == 'POST':
@@ -403,17 +516,7 @@ def register(request):
 
 @login_required
 @superuser_required
-def admin_dashboard(request):
-    tutorials = Tutorial.objects.all().order_by('order')
-    total_students = UserProgress.objects.filter(tutorial__in=tutorials).values('user').distinct().count()
-    total_earnings = sum(tutorial.price for tutorial in tutorials if not tutorial.free_access)
-    
-    context = {
-        'tutorials': tutorials,
-        'total_students': total_students,
-        'total_earnings': total_earnings,
-    }
-    return render(request, 'base/admin_dashboard.html', context)
+
 
 @superuser_required
 def create_tutorial(request):
@@ -433,14 +536,30 @@ def create_tutorial(request):
                 tutorial.thumbnail = request.FILES['thumbnail']
             
             tutorial.save()
-            return redirect('admin_dashboard')
+            messages.success(request, f'Tutorial "{tutorial.title}" has been created successfully!')
+            return redirect('dashboard')
         else:
-            print("Form errors:", form.errors)  # Debug print
+            messages.error(request, 'Please correct the errors below.')
             
-        return render(request, 'base/tutorial_form.html', {'form': form})
+        # Add context for superuser dashboard
+        context = {
+            'form': form,
+            'total_tutorials': Tutorial.objects.count(),
+            'total_students': CustomUser.objects.count(),
+        }
+        
+        return render(request, 'base/tutorial_form.html', context)
     
     form = TutorialForm()
-    return render(request, 'base/tutorial_form.html', {'form': form})
+    
+    # Add context for superuser dashboard
+    context = {
+        'form': form,
+        'total_tutorials': Tutorial.objects.count(),
+        'total_students': CustomUser.objects.count(),
+    }
+    
+    return render(request, 'base/tutorial_form.html', context)
 
 @csrf_exempt
 @superuser_required
@@ -492,8 +611,29 @@ def upload_thumbnail(request):
                 return JsonResponse({"error": "Tutorial not found"}, status=404)
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-
-
-
-
-
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@login_required
+@superuser_required
+def delete_tutorial(request, tutorial_id):
+    if request.method == 'POST':
+        try:
+            tutorial = get_object_or_404(Tutorial, id=tutorial_id)
+            title = tutorial.title
+            tutorial.delete()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Tutorial "{title}" has been deleted successfully.'
+                })
+            messages.success(request, f'Tutorial "{title}" has been deleted successfully.')
+            return redirect('dashboard')
+        except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=400)
+            messages.error(request, f'Error deleting tutorial: {str(e)}')
+            return redirect('dashboard')
+    return HttpResponseRedirect(reverse('dashboard'))

@@ -22,6 +22,9 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- plyr.io for better video playback -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -213,7 +216,27 @@
             }, 5000);
         });
     </script>
+
+    <!-- Video Player Scripts -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     
+    <!-- Tutorial Management Scripts -->
+    {% if user.is_superuser %}
+    <script src="{% static 'js/tutorial-management.js' %}"></script>
+    {% endif %}
+    
+    <script>
+        // Initialize video players
+        document.addEventListener('DOMContentLoaded', function() {
+            const players = document.querySelectorAll('video');
+            players.forEach(player => {
+                new Plyr(player, {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                    storage: { enabled: true, key: 'plyr' }
+                });
+            });
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,256 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block title %}{{ pair.base_currency }}/{{ pair.quote_currency }} Chart - Forex Academy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'forex_dashboard' %}" class="text-primary">
+                                    <i class="fas fa-chart-line me-1"></i>Forex Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">
+                                {{ pair.base_currency }}/{{ pair.quote_currency }}
+                            </li>
+                        </ol>
+                    </nav>
+                    <h2 class="text-white mb-2">
+                        {{ pair.base_currency }}/{{ pair.quote_currency }} Chart
+                    </h2>
+                    <p class="text-muted mb-0">Real-time price analysis and technical indicators</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6 me-2">
+                        <i class="fas fa-circle me-1"></i>
+                        Live
+                    </span>
+                    <span class="badge bg-info fs-6">
+                        Major Pair
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Info Section -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-dark text-white border-primary">
+                <div class="card-body text-center">
+                    <h5 class="text-primary">Current Rate</h5>
+                    <h3 class="text-success mb-0">{{ pair.current_rate|floatformat:4 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-body text-center">
+                    <h5 class="text-secondary">24h Change</h5>
+                    <h3 class="{% if pair.daily_change >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
+                        {{ pair.daily_change|floatformat:2 }}%
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-dark text-white border-warning">
+                <div class="card-body text-center">
+                    <h5 class="text-warning">Daily High</h5>
+                    <h3 class="text-info mb-0">{{ pair.daily_high|floatformat:4 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-dark text-white border-info">
+                <div class="card-body text-center">
+                    <h5 class="text-info">Daily Low</h5>
+                    <h3 class="text-white mb-0">{{ pair.daily_low|floatformat:4 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-candlestick me-2"></i>
+                        Price Chart
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <a href="?timeframe=1d" class="btn btn-sm {% if request.GET.timeframe == '1d' or not request.GET.timeframe %}btn-primary{% else %}btn-outline-primary{% endif %}">1D</a>
+                        <a href="?timeframe=1w" class="btn btn-sm {% if request.GET.timeframe == '1w' %}btn-primary{% else %}btn-outline-primary{% endif %}">1W</a>
+                        <a href="?timeframe=1mo" class="btn btn-sm {% if request.GET.timeframe == '1mo' %}btn-primary{% else %}btn-outline-primary{% endif %}">1M</a>
+                        <a href="?timeframe=3mo" class="btn btn-sm {% if request.GET.timeframe == '3mo' %}btn-primary{% else %}btn-outline-primary{% endif %}">3M</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="tradingview_chart" style="height: 500px;">
+                        <!-- TradingView Widget or Chart will be loaded here -->
+                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                <p>Interactive chart will be loaded here</p>
+                                <small>Integration with TradingView or Chart.js coming soon</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Analysis Section -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card bg-dark text-white">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Technical Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <h6 class="text-warning">Moving Averages</h6>
+                            <ul class="list-unstyled">
+                                <li class="d-flex justify-content-between">
+                                    <span>MA 20:</span>
+                                    <span class="text-success">{{ pair.current_rate|floatformat:4 }}</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>MA 50:</span>
+                                    <span class="text-danger">{{ pair.current_rate|floatformat:4 }}</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>MA 200:</span>
+                                    <span class="text-info">{{ pair.current_rate|floatformat:4 }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <h6 class="text-warning">Oscillators</h6>
+                            <ul class="list-unstyled">
+                                <li class="d-flex justify-content-between">
+                                    <span>RSI:</span>
+                                    <span class="badge bg-warning">65.4</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>MACD:</span>
+                                    <span class="badge bg-success">Bullish</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>Stochastic:</span>
+                                    <span class="badge bg-info">42.1</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <h6 class="text-warning">Support & Resistance</h6>
+                            <ul class="list-unstyled">
+                                <li class="d-flex justify-content-between">
+                                    <span>Resistance:</span>
+                                    <span class="text-danger">{{ pair.daily_high|floatformat:4 }}</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>Support:</span>
+                                    <span class="text-success">{{ pair.daily_low|floatformat:4 }}</span>
+                                </li>
+                                <li class="d-flex justify-content-between">
+                                    <span>Pivot:</span>
+                                    <span class="text-info">{{ pair.current_rate|floatformat:4 }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-dark text-white">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Trading Calculator
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Position Size (Lots)</label>
+                        <input type="number" class="form-control bg-secondary text-white border-0" 
+                               value="0.01" step="0.01" min="0.01" id="positionSize">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stop Loss (Pips)</label>
+                        <input type="number" class="form-control bg-secondary text-white border-0" 
+                               value="20" min="1" id="stopLoss">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Take Profit (Pips)</label>
+                        <input type="number" class="form-control bg-secondary text-white border-0" 
+                               value="40" min="1" id="takeProfit">
+                    </div>
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Risk Amount:</span>
+                            <span class="text-danger" id="riskAmount">$20.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Reward Amount:</span>
+                            <span class="text-success" id="rewardAmount">$40.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Risk/Reward:</span>
+                            <span class="text-info" id="riskReward">1:2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Trading calculator functionality
+    function updateCalculations() {
+        const positionSize = parseFloat(document.getElementById('positionSize').value) || 0;
+        const stopLoss = parseFloat(document.getElementById('stopLoss').value) || 0;
+        const takeProfit = parseFloat(document.getElementById('takeProfit').value) || 0;
+        
+        // Assuming $10 per pip for standard lot (simplified calculation)
+        const pipValue = positionSize * 10;
+        const riskAmount = stopLoss * pipValue;
+        const rewardAmount = takeProfit * pipValue;
+        const riskReward = rewardAmount / riskAmount;
+        
+        document.getElementById('riskAmount').textContent = `$${riskAmount.toFixed(2)}`;
+        document.getElementById('rewardAmount').textContent = `$${rewardAmount.toFixed(2)}`;
+        document.getElementById('riskReward').textContent = `1:${riskReward.toFixed(1)}`;
+    }
+    
+    // Add event listeners for calculator inputs
+    document.getElementById('positionSize').addEventListener('input', updateCalculations);
+    document.getElementById('stopLoss').addEventListener('input', updateCalculations);
+    document.getElementById('takeProfit').addEventListener('input', updateCalculations);
+    
+    // Auto-refresh price data every 5 seconds
+    setInterval(function() {
+        // In a real implementation, you would fetch new price data via AJAX
+        console.log('Refreshing price data...');
+    }, 5000);
+</script>
+{% endblock %}

@@ -157,3 +157,15 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Django Daraja (M-Pesa) Settings
+# For sandbox testing - replace with production values for live environment
+MPESA_ENVIRONMENT = 'sandbox'  # Change to 'production' for live
+MPESA_CONSUMER_KEY = 'your_consumer_key'  # Replace with actual key
+MPESA_CONSUMER_SECRET = 'your_consumer_secret'  # Replace with actual secret
+MPESA_SHORTCODE = '174379'  # Test shortcode - replace with actual
+MPESA_EXPRESS_SHORTCODE = '174379'  # Test shortcode
+MPESA_SHORTCODE_TYPE = 'paybill'  # or 'till_number'
+MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'  # Test passkey
+MPESA_INITIATOR_USERNAME = 'testapi'  # Test initiator
+MPESA_INITIATOR_SECURITY_CREDENTIAL = 'your_security_credential'
+
