@@ -1,34 +1,79 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<body>
-    <div class="create_task">
-        <div class="create_task_div">
-            <div class="header_task">
-                <h2>Create New Task</h2>
-            </div>
-            <div class="create_task_details">
-                <form action="" method="post">
-                    {% csrf_token %}
-                <label for="description">The Task</label>
-                <input type="text" name="description" id="description" class="description"required>
-
-                <label for="due_date">Until when</label>
-                <input type="date" name="due_date" id="due_date" class="due_date" required>
-
-                <label for="category"> Priority: </label>
-                <select name="category" id="category" class="category">
-                    <option value="category"> -------- </option>
-                    {% for value , label in choices %}
-                    <option value="{{ value }}"> {{ label }}</option>
-                    {% endfor %}
-                </select>
-
-                <button type="submit" class="task_button">save</button>
-            </form>
+<body style="background: #f5f7fa; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.1); max-width: 600px; width: 100%;">
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: #2c3e50; margin-bottom: 8px;">➕ Create New Task</h2>
+            <p style="color: #7f8c8d; font-size: 14px;">Fill in the details below to add a new task to your list</p>
         </div>
         
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div class="toast {{ message.tags }}" style="position: relative; margin-bottom: 10px;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Task Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <p style="color: #e74c3c; font-size: 12px; margin-top: 4px;">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p style="color: #e74c3c; font-size: 12px; margin-top: 4px;">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Priority</label>
+                    {{ form.priority }}
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Category</label>
+                    {{ form.categories }}
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Due Date</label>
+                    {{ form.due_date }}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600;">Tags</label>
+                {{ form.tags }}
+                {% if form.tags.errors %}
+                <p style="color: #e74c3c; font-size: 12px; margin-top: 4px;">{{ form.tags.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Task</button>
+                <a href="{% url 'userpage' %}" class="btn btn-secondary">❌ Cancel</a>
+            </div>
+        </form>
     </div>
-    
 </body>
 {% endblock content %}

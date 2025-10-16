@@ -1,30 +1,101 @@
 {% extends 'main.html' %}
 
 {% block content %}
-
-<body>
-
-    <div class="details_body">
-        <div class="Task_header">
-            <p>Task Details</p>
+<body style="background: #f5f7fa; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.1); max-width: 700px; width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin: 0;">📋 Task Details</h1>
+            <a href="{% url 'userpage' %}" class="btn btn-secondary">← Back</a>
         </div>
-        <hr>
-        <div class="details">
-            <h1>{{tasks.description}}</h1>
-            <p>due to : {{tasks.due_date | timesince}}</p>
-            <p>create: {{tasks.created_at | timesince}} ago</p>
-            <p>{{tasks.categories}}</p>
+        
+        <div style="background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+            <h2 style="color: #2c3e50; margin-bottom: 16px; font-size: 24px;">
+                {{ tasks.title|default:tasks.description }}
+            </h2>
+            
+            {% if tasks.description and tasks.title %}
+            <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">{{ tasks.description }}</p>
+            {% endif %}
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+                <span class="badge badge-{{ tasks.priority }}">
+                    {{ tasks.get_priority_display }}
+                </span>
+                <span class="badge badge-status">
+                    {{ tasks.get_status_display }}
+                </span>
+                <span class="badge" style="background: #f0f0f0; color: #555;">
+                    {{ tasks.get_categories_display }}
+                </span>
+                {% if tasks.complete %}
+                <span class="badge" style="background: #e8f5e9; color: #50c878;">
+                    ✓ Completed
+                </span>
+                {% endif %}
+                {% if tasks.is_overdue %}
+                <span class="badge" style="background: #ffe5e5; color: #e74c3c;">
+                    ⚠️ Overdue
+                </span>
+                {% endif %}
+            </div>
+            
+            {% if tasks.tag_list %}
+            <div style="margin-bottom: 20px;">
+                <strong style="color: #2c3e50;">Tags:</strong>
+                {% for tag in tasks.tag_list %}
+                    <span class="tag">🏷️ {{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
-        <hr>
-        <div class="details-links-fuctions">
-            <a href="{% url 'userpage' %}">Go back</a>
-            <a href="{% url 'delete_task' tasks.id %}">delete</a>
-            <a href="{% url 'edit_task' tasks.id  %}">edit</a>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+                <p style="color: #7f8c8d; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Created</p>
+                <p style="color: #2c3e50; font-weight: 600;">{{ tasks.created_at|date:"M d, Y" }}</p>
+                <p style="color: #7f8c8d; font-size: 14px;">{{ tasks.created_at|timesince }} ago</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+                <p style="color: #7f8c8d; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Due Date</p>
+                {% if tasks.due_date %}
+                <p style="color: #2c3e50; font-weight: 600;">{{ tasks.due_date|date:"M d, Y" }}</p>
+                {% if tasks.is_overdue %}
+                <p style="color: #e74c3c; font-size: 14px;">Overdue!</p>
+                {% else %}
+                <p style="color: #50c878; font-size: 14px;">{{ tasks.due_date|timeuntil }} remaining</p>
+                {% endif %}
+                {% else %}
+                <p style="color: #7f8c8d; font-style: italic;">No due date set</p>
+                {% endif %}
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+                <p style="color: #7f8c8d; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Last Updated</p>
+                <p style="color: #2c3e50; font-weight: 600;">{{ tasks.updated_at|date:"M d, Y" }}</p>
+                <p style="color: #7f8c8d; font-size: 14px;">{{ tasks.updated_at|timesince }} ago</p>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+                <p style="color: #7f8c8d; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Status</p>
+                <p style="color: #2c3e50; font-weight: 600;">
+                    {% if tasks.complete %}
+                        ✓ Completed
+                    {% else %}
+                        ⏳ In Progress
+                    {% endif %}
+                </p>
+            </div>
         </div>
-
+        
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'edit_task' tasks.id %}" class="btn btn-primary" style="flex: 1; text-align: center;">
+                ✏️ Edit Task
+            </a>
+            <a href="{% url 'delete_task' tasks.id %}" class="btn btn-danger" style="flex: 1; text-align: center;">
+                🗑️ Delete Task
+            </a>
+        </div>
     </div>
-
-    
-    
 </body>
 {% endblock content %}

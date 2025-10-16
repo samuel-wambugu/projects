@@ -1,29 +1,172 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<body>
-    <div class="body-container">
-        <div class="welcome-message">
-            <p>hello {{request.user}}, Welcome</p>
-        </div>
-        <div class="new_task">
-            <a href="{% url 'create_task' %}">new Task</a>
-            <a href="{% url 'logoutpage' %}">logout</a>
+<body style="background: #f5f7fa; min-height: 100vh; padding: 20px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Header -->
+        <div style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <h1 style="color: #2c3e50; margin: 0;">Hello, {{ request.user }}! 👋</h1>
+                <div style="display: flex; gap: 12px;">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">📊 Dashboard</a>
+                    <a href="{% url 'create_task' %}" class="btn btn-primary">➕ New Task</a>
+                    <a href="{% url 'logoutpage' %}" class="btn btn-danger">🚪 Logout</a>
+                </div>
+            </div>
         </div>
 
-        <div class="task-div">
-            <ul>
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_tasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #50c878;">{{ completed_tasks }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #f39c12;">{{ pending_tasks }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #e74c3c;">{{ overdue_tasks }}</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+
+        <!-- Filter and Search Bar -->
+        <div class="filter-bar">
+            <form method="GET" action="{% url 'userpage' %}">
+                <input type="text" name="search" class="search-box" placeholder="🔍 Search tasks..." value="{{ search_query }}">
+                
+                <div class="filter-group">
+                    <select name="status" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="priority" onchange="this.form.submit()">
+                        <option value="">All Priorities</option>
+                        {% for value, label in priority_choices %}
+                            <option value="{{ value }}" {% if priority_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="category" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <select name="sort" onchange="this.form.submit()">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="due_date" {% if sort_by == 'due_date' %}selected{% endif %}>Due Date (Ascending)</option>
+                        <option value="-due_date" {% if sort_by == '-due_date' %}selected{% endif %}>Due Date (Descending)</option>
+                        <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority (Low to High)</option>
+                        <option value="-priority" {% if sort_by == '-priority' %}selected{% endif %}>Priority (High to Low)</option>
+                        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                    </select>
+                    
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                    <a href="{% url 'userpage' %}" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tasks List -->
+        <div>
+            {% if tasks %}
                 {% for task in tasks %}
-                    <li>
-                        <h3><a href="{% url 'task_details' task.id %}">{{ task.description }}</a></h3>
-                    </li>
-                {% empty %}
-                    <h3>hello {{request.user}}, welcome to our page</h3>
+                <div class="task-card {% if task.complete %}completed{% elif task.is_overdue %}overdue{% endif %}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <input type="checkbox" 
+                                       class="task-checkbox"
+                                       data-task-id="{{ task.id }}"
+                                       {% if task.complete %}checked{% endif %}
+                                       style="width: 20px; height: 20px; cursor: pointer;">
+                                <h3 class="task-title {% if task.complete %}completed-task{% endif %}" style="margin: 0; font-size: 18px;">
+                                    <a href="{% url 'task_details' task.id %}" style="color: inherit; text-decoration: none;">
+                                        {{ task.title|default:task.description|truncatewords:10 }}
+                                    </a>
+                                </h3>
+                            </div>
+                            
+                            {% if task.description and task.title %}
+                            <p style="color: #7f8c8d; margin: 8px 0; font-size: 14px;">{{ task.description|truncatewords:20 }}</p>
+                            {% endif %}
+                            
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+                                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                                <span class="badge badge-status">{{ task.get_status_display }}</span>
+                                <span class="badge badge-category">{{ task.get_categories_display }}</span>
+                                {% if task.due_date %}
+                                <span class="badge {% if task.is_overdue %}badge-overdue{% else %}badge-upcoming{% endif %}">
+                                    📅 {{ task.due_date|date:"M d, Y" }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if task.tag_list %}
+                            <div style="margin-top: 8px;">
+                                {% for tag in task.tag_list %}
+                                    <span class="tag">🏷️ {{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'edit_task' task.id %}" style="padding: 8px 12px; background: #4a90e2; color: white; border-radius: 6px; text-decoration: none; font-size: 14px;">✏️ Edit</a>
+                            <a href="{% url 'delete_task' task.id %}" style="padding: 8px 12px; background: #e74c3c; color: white; border-radius: 6px; text-decoration: none; font-size: 14px;">🗑️ Delete</a>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
-            </ul>
-           
+            {% else %}
+                <div style="background: white; padding: 60px 20px; border-radius: 12px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #7f8c8d; margin-bottom: 16px;">📝 No tasks found</h2>
+                    <p style="color: #95a5a6; margin-bottom: 24px;">Start organizing your life by creating your first task!</p>
+                    <a href="{% url 'create_task' %}" class="btn btn-primary">➕ Create Your First Task</a>
+                </div>
+            {% endif %}
         </div>
     </div>
-    
+
+    <script>
+        // Event delegation for task checkboxes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('task-checkbox')) {
+                    const checkbox = e.target;
+                    const taskId = checkbox.dataset.taskId;
+                    
+                    fetch(`/toggle_complete/${taskId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        checkbox.checked = !checkbox.checked;
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 {% endblock content %}

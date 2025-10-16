@@ -1,13 +1,16 @@
-from django.shortcuts import render, get_object_or_404,redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from .models import Task
-from .forms import TaskForm,customizedUserCreationForm
+from .forms import TaskForm, customizedUserCreationForm
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import  login_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.db.models import Q, Count
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 
 
@@ -17,8 +20,60 @@ def home(request):
 @login_required(login_url='/')
 def userpage(request):
     tasks = Task.objects.filter(user=request.user)
-        
-    context = {'tasks': tasks}
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        tasks = tasks.filter(
+            Q(title__icontains=search_query) | 
+            Q(description__icontains=search_query) |
+            Q(tags__icontains=search_query)
+        )
+    
+    # Filter functionality
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+    
+    priority_filter = request.GET.get('priority', '')
+    if priority_filter:
+        tasks = tasks.filter(priority=priority_filter)
+    
+    category_filter = request.GET.get('category', '')
+    if category_filter:
+        tasks = tasks.filter(categories=category_filter)
+    
+    # Sorting functionality
+    sort_by = request.GET.get('sort', '-created_at')
+    valid_sorts = ['due_date', '-due_date', 'priority', '-priority', 'created_at', '-created_at', 'title', '-title']
+    if sort_by in valid_sorts:
+        tasks = tasks.order_by(sort_by)
+    
+    # Statistics
+    total_tasks = Task.objects.filter(user=request.user).count()
+    completed_tasks = Task.objects.filter(user=request.user, complete=True).count()
+    pending_tasks = total_tasks - completed_tasks
+    overdue_tasks = Task.objects.filter(
+        user=request.user,
+        complete=False,
+        due_date__lt=timezone.now().date()
+    ).count()
+    
+    context = {
+        'tasks': tasks,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'priority_filter': priority_filter,
+        'category_filter': category_filter,
+        'sort_by': sort_by,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'overdue_tasks': overdue_tasks,
+        'status_choices': Task.STATUS_CHOICES,
+        'priority_choices': Task.PRIORITY_CHOICES,
+        'category_choices': Task.Categories,
+    }
     return render(request, 'base/userpage.html', context)
 
 @login_required(login_url='/')
@@ -42,41 +97,39 @@ def delete_task(request, pk):
 
 @login_required(login_url='/')
 def create_task(request):
-    tasks = Task.objects.filter(user =request.user)
-    form = TaskForm
-    choices = Task.Categories
-    
     if request.method == 'POST':
-        description = request.POST.get('description')
-        due_date = request.POST.get('duedate')
-        categories = request.POST.get('category')
-        Task.objects.create(
-            user =request.user,
-            description=description,
-            due_date=due_date,
-            categories = categories
-        )
-        return redirect('userpage')
-    context ={'form': form, 'tasks':tasks,'choices':choices}
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+            messages.success(request, 'Task created successfully!')
+            return redirect('userpage')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TaskForm()
+    
+    context = {'form': form}
     return render(request, 'base/create_task.html', context)
 
 
 @login_required(login_url='/')
 def edit_task(request, pk):
+    task = get_object_or_404(Task, id=pk, user=request.user)
     
-    task = Task.objects.get(id=pk)
-    form = TaskForm(request.POST, instance=task)
-    choices = task.Categories
-
     if request.method == 'POST':
-        task.description = request.POST.get('description')
-        task.due_date = request.POST.get('due_date')
-        task.categories = request.POST.get('category')
-
-        task.save()
-        
-        return redirect('task_details', pk=task.id)
-    context ={'form': form, 'tasks':task,'choices':choices}
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Task updated successfully!')
+            return redirect('task_details', pk=task.id)
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TaskForm(instance=task)
+    
+    context = {'form': form, 'task': task}
     return render(request, 'base/edit_task.html', context)
 
 
@@ -132,3 +185,81 @@ def loginAccount(request):
 def logoutpage(request):
     logout(request)
     return redirect('home')
+
+
+@login_required(login_url='/')
+def toggle_complete(request, pk):
+    """Toggle task completion status via AJAX"""
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=pk, user=request.user)
+        task.complete = not task.complete
+        if task.complete:
+            task.status = 'completed'
+        else:
+            task.status = 'todo'
+        task.save()
+        return JsonResponse({
+            'success': True,
+            'complete': task.complete,
+            'status': task.get_status_display()
+        })
+    return JsonResponse({'success': False}, status=400)
+
+
+@login_required(login_url='/')
+def dashboard(request):
+    """Dashboard with task statistics and analytics"""
+    user_tasks = Task.objects.filter(user=request.user)
+    
+    # Basic statistics
+    total_tasks = user_tasks.count()
+    completed_tasks = user_tasks.filter(complete=True).count()
+    pending_tasks = total_tasks - completed_tasks
+    overdue_tasks = user_tasks.filter(
+        complete=False,
+        due_date__lt=timezone.now().date()
+    ).count()
+    
+    # Completion rate
+    completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    
+    # Tasks by priority
+    high_priority = user_tasks.filter(priority='high').count()
+    medium_priority = user_tasks.filter(priority='medium').count()
+    low_priority = user_tasks.filter(priority='low').count()
+    
+    # Tasks by category
+    tasks_by_category = user_tasks.values('categories').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    # Tasks by status
+    tasks_by_status = user_tasks.values('status').annotate(
+        count=Count('id')
+    )
+    
+    # Recent tasks
+    recent_tasks = user_tasks.order_by('-created_at')[:5]
+    
+    # Upcoming tasks (next 7 days)
+    upcoming_tasks = user_tasks.filter(
+        complete=False,
+        due_date__gte=timezone.now().date(),
+        due_date__lte=timezone.now().date() + timedelta(days=7)
+    ).order_by('due_date')[:5]
+    
+    context = {
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'overdue_tasks': overdue_tasks,
+        'completion_rate': round(completion_rate, 1),
+        'high_priority': high_priority,
+        'medium_priority': medium_priority,
+        'low_priority': low_priority,
+        'tasks_by_category': tasks_by_category,
+        'tasks_by_status': tasks_by_status,
+        'recent_tasks': recent_tasks,
+        'upcoming_tasks': upcoming_tasks,
+    }
+    return render(request, 'base/dashboard.html', context)
