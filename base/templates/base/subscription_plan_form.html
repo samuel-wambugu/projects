@@ -1,0 +1,169 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <h3 class="mb-1">
+                        <i class="fas fa-{% if action == 'Create' %}plus{% else %}edit{% endif %} me-2"></i>
+                        {{ action }} Subscription Plan
+                    </h3>
+                    <p class="mb-0">{{ action }} subscription plan pricing and duration</p>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Display form errors -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <h6><i class="fas fa-exclamation-circle me-2"></i>Please correct the following errors:</h6>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+
+                        <!-- Plan Name -->
+                        <div class="mb-4">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag text-primary me-2"></i>
+                                <strong>{{ form.name.label }}</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                            <div class="form-text">{{ form.name.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price in KSh -->
+                        <div class="mb-4">
+                            <label for="{{ form.price_ksh.id_for_label }}" class="form-label">
+                                <i class="fas fa-money-bill text-success me-2"></i>
+                                <strong>{{ form.price_ksh.label }}</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">KSh</span>
+                                {{ form.price_ksh }}
+                            </div>
+                            {% if form.price_ksh.help_text %}
+                            <div class="form-text">{{ form.price_ksh.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Duration in Days -->
+                        <div class="mb-4">
+                            <label for="{{ form.duration_days.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar text-info me-2"></i>
+                                <strong>{{ form.duration_days.label }}</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                {{ form.duration_days }}
+                                <span class="input-group-text">days</span>
+                            </div>
+                            {% if form.duration_days.help_text %}
+                            <div class="form-text">{{ form.duration_days.help_text }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Common durations: 30 days (Monthly), 90 days (Quarterly), 365 days (Yearly)
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left text-secondary me-2"></i>
+                                <strong>{{ form.description.label }}</strong>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                            <div class="form-text">{{ form.description.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Active Status -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    <strong>{{ form.is_active.label }}</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Only active plans will be visible to users
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                            <a href="{% url 'manage_subscription_plans' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-save me-2"></i>
+                                {{ action }} Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Tips for Setting Up Subscription Plans
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>Pricing:</strong> Set competitive prices in Kenyan Shillings (KSh)</li>
+                        <li><strong>Duration:</strong> Standard durations are 30 (monthly), 90 (quarterly), or 365 (yearly) days</li>
+                        <li><strong>Description:</strong> Add details about what the plan includes</li>
+                        <li><strong>Status:</strong> Inactive plans won't be shown to users</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap form styling
+    document.addEventListener('DOMContentLoaded', function() {
+        const formInputs = document.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            if (!input.classList.contains('form-check-input')) {
+                input.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

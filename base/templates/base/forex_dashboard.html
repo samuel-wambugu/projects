@@ -1,0 +1,413 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block title %}Forex Dashboard - Forex Academy{% endblock %}
+
+{% block content %}
+<div class="min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);">
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                        <i class="fas fa-chart-line text-warning me-2" style="color: #FFD700 !important;"></i>
+                        Forex Trading Dashboard
+                    </h2>
+                    <p class="text-white mb-0" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Real-time forex data and trading insights</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-wifi me-1"></i>
+                        Live Market Data
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trading Education Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                <i class="fas fa-graduation-cap me-2" style="color: #FF6B6B !important;"></i>
+                Trading Fundamentals
+            </h3>
+        </div>
+        
+        <!-- Margin Trading Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card text-white h-100 shadow-lg" style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.3);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-percentage me-2" style="color: #FFD700;"></i>
+                        Margin Trading
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Margin trading allows you to trade with borrowed funds, amplifying both potential profits and losses.
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Initial Margin:</strong> Required deposit (typically 1-5%)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Maintenance Margin:</strong> Minimum account balance
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <strong>Margin Call:</strong> When equity falls below maintenance
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leverage Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card text-white h-100 shadow-lg" style="background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.3);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2" style="color: #FFE066;"></i>
+                        Leverage Ratios
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Leverage multiplies your trading position size relative to your capital.
+                    </p>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="rounded p-2" style="background: linear-gradient(45deg, #00C9FF, #92FE9D); color: white; box-shadow: 0 4px 15px rgba(0,201,255,0.4);">
+                                <h6 class="mb-1" style="font-weight: bold;">1:50</h6>
+                                <small>Conservative</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="rounded p-2" style="background: linear-gradient(45deg, #FFE000, #799F0C); color: white; box-shadow: 0 4px 15px rgba(255,224,0,0.4);">
+                                <h6 class="mb-1" style="font-weight: bold;">1:100</h6>
+                                <small>Moderate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="rounded p-2" style="background: linear-gradient(45deg, #FF512F, #DD2476); color: white; box-shadow: 0 4px 15px rgba(255,81,47,0.4);">
+                                <h6 class="mb-1" style="font-weight: bold;">1:500</h6>
+                                <small>Aggressive</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="rounded p-2" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; box-shadow: 0 4px 15px rgba(102,126,234,0.4);">
+                                <h6 class="mb-1" style="font-weight: bold;">1:1000</h6>
+                                <small>Expert</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Management Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card text-white h-100 shadow-lg" style="background: linear-gradient(135deg, #A8E6CF 0%, #7FCDCD 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.3);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2" style="color: #FF9A8B;"></i>
+                        Risk Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Proper risk management is crucial for long-term trading success.
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-stop-circle text-danger me-2"></i>
+                            <strong>Stop Loss:</strong> Limit potential losses
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-target text-success me-2"></i>
+                            <strong>Take Profit:</strong> Secure gains automatically
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-calculator text-info me-2"></i>
+                            <strong>Position Size:</strong> Risk 1-2% per trade
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currency Pairs Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                <i class="fas fa-exchange-alt me-2" style="color: #4ECDC4 !important;"></i>
+                Major Currency Pairs
+            </h3>
+        </div>
+    </div>
+
+    {% if currency_pairs %}
+    <div class="row">
+        {% for pair in currency_pairs %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card text-white h-100 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-8px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title text-primary">
+                            {{ pair.base_currency }}/{{ pair.quote_currency }}
+                        </h5>
+                        <span class="badge bg-secondary">
+                            Major Pair
+                        </span>
+                    </div>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h6 class="text-success mb-1">{{ pair.current_rate|floatformat:4 }}</h6>
+                                <small class="text-muted">Current Rate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="{% if pair.daily_change >= 0 %}text-success{% else %}text-danger{% endif %} mb-1">
+                                {{ pair.daily_change|floatformat:2 }}%
+                            </h6>
+                            <small class="text-muted">24h Change</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Daily High</small>
+                            <span class="badge bg-success">{{ pair.daily_high|floatformat:4 }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Daily Low</small>
+                            <span class="badge bg-danger">{{ pair.daily_low|floatformat:4 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'forex_chart' pair.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-chart-area me-1"></i>
+                            View Chart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                No currency pairs available. Please add some currency pairs in the admin panel.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Trading Tips Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                <i class="fas fa-lightbulb me-2" style="color: #FFE066 !important;"></i>
+                Professional Trading Tips
+            </h3>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card text-white shadow-lg" style="background: linear-gradient(135deg, #FF9A8B 0%, #ACD34A 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.3);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2" style="color: #4ECDC4;"></i>
+                        Position Sizing Formula
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="bg-secondary p-3 rounded mb-3">
+                        <code class="text-warning">
+                            Position Size = (Account Balance × Risk %) ÷ (Stop Loss in pips × Pip Value)
+                        </code>
+                    </div>
+                    <p class="card-text">
+                        <strong>Example:</strong> With a $10,000 account, 2% risk, 50-pip stop loss, and $1 pip value:
+                    </p>
+                    <p class="text-info">
+                        Position Size = ($10,000 × 0.02) ÷ (50 × $1) = $200 ÷ $50 = 0.04 lots
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card text-white shadow-lg" style="background: linear-gradient(135deg, #A8E6CF 0%, #FFE066 100%); border: none; transform: translateY(0); transition: all 0.3s ease;" 
+                 onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-header" style="background: rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.3);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2" style="color: #FF6B6B;"></i>
+                        Best Trading Hours
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong class="text-warning">London Session:</strong> 08:00 - 17:00 GMT
+                            <br><small class="text-muted">High volatility for EUR, GBP pairs</small>
+                        </li>
+                        <li class="mb-2">
+                            <strong class="text-success">New York Session:</strong> 13:00 - 22:00 GMT
+                            <br><small class="text-muted">USD pairs most active</small>
+                        </li>
+                        <li class="mb-2">
+                            <strong class="text-info">Asian Session:</strong> 23:00 - 08:00 GMT
+                            <br><small class="text-muted">JPY, AUD, NZD focus</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh market data every 30 seconds
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+    
+    // Add fun animations and effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slideInUp 0.6s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+        
+        // Add floating animation to icons
+        document.querySelectorAll('i.fas').forEach((icon, index) => {
+            icon.style.animation = `float ${2 + Math.random()}s ease-in-out infinite`;
+            icon.style.animationDelay = `${index * 0.1}s`;
+        });
+        
+        // Add pulse effect to badges
+        document.querySelectorAll('.badge').forEach(badge => {
+            badge.addEventListener('mouseenter', function() {
+                this.style.animation = 'pulse 0.6s';
+            });
+        });
+        
+        // Create floating particles effect
+        createFloatingParticles();
+    });
+    
+    // Create floating particles for visual appeal
+    function createFloatingParticles() {
+        const container = document.body;
+        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#A8E6CF', '#FFE066'];
+        
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = '6px';
+            particle.style.height = '6px';
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.opacity = '0.7';
+            particle.style.zIndex = '1';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animation = `floatParticle ${10 + Math.random() * 20}s linear infinite`;
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            
+            container.appendChild(particle);
+        }
+    }
+</script>
+
+<style>
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes floatParticle {
+        0% {
+            transform: translateY(100vh) translateX(0);
+            opacity: 0.7;
+        }
+        10% {
+            opacity: 0.9;
+        }
+        90% {
+            opacity: 0.9;
+        }
+        100% {
+            transform: translateY(-100px) translateX(50px);
+            opacity: 0;
+        }
+    }
+    
+    /* Add glowing effect to cards */
+    .card:hover {
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    /* Make badges more vibrant */
+    .badge {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}

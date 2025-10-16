@@ -17,11 +17,12 @@
       <input type="text" name="username" placeholder="Please enter your username..." required id="username">
 
         <label for="password">Password:</label>
-        <input type="password" name="password" placeholder="Enter your password..."required id="password">
-                  
+        <input type="password" name="password" placeholder="Enter your password..."required id="password" class="password">
+  
     <div class="sigupbtn-div">
         <button type="submit" >login</button>
     </div>
+    
       
     </form>
     <div>
@@ -40,6 +41,14 @@
 
     <form action="" method="post" class="form-div">
         {% csrf_token %}
+
+        {% for message in messages %}
+          {% if message.tags == 'success' %}
+            <p style="color: green;">{{ message }}</p>
+          {% else %}
+            <p style="color: red;">{{ message }}</p>
+          {% endif %}
+        {% endfor %}
       <label for="username">Username:</label>
       <input type="text" name="username" placeholder="Please enter your username..." required id="username">
 
@@ -50,13 +59,13 @@
 
       
         <label for="password">Password:</label>
-        <input type="password" name="password" placeholder="Enter your password..."required id="password">
+        <input type="password" name="password" placeholder="Enter your password..."required id="password" class="password2">
     
       
 
         <label for="confirmpassword">Confirm your password:</label>
         <input type="password" name="confirmpassword" placeholder="Please confirm your password..."required id="confirmpassword">
-        <div class="confirm"></div>
+        
             
     <div class="sigupbtn-div">
         <button type="submit" >Signup</button>
@@ -70,5 +79,6 @@
   </div>
 </div>
    {% endif %}
+
 </body>
 {% endblock content %}
