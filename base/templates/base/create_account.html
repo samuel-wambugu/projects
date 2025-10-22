@@ -1,84 +1,190 @@
 {% extends 'main.html' %}
+{% load static %}
 
 {% block content %}
-<body>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Decorative Background Elements -->
+        <div class="auth-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
 
-      {% if page == 'login' %}
-<div id="loginModal" class="loginmodal">
+        {% if page == 'login' %}
+        <!-- LOGIN PAGE -->
+        <div class="auth-card">
+            <!-- Logo Section -->
+            <div class="auth-logo">
+                <img src="{% static 'base/images/logo.svg' %}" alt="TaskMaster Logo">
+                <h1>TaskMaster</h1>
+            </div>
 
-  <div class="login-divi">
-    <div class="login-header-div">
-      <h1>SIGN IN</h1>
+            <!-- Header -->
+            <div class="auth-header">
+                <h2>Welcome Back! 👋</h2>
+                <p>Sign in to continue to your dashboard</p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <!-- Messages -->
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span class="alert-icon">
+                        {% if message.tags == 'error' %}⚠️{% else %}✓{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+
+                <!-- Username Field -->
+                <div class="form-group">
+                    <label for="username">
+                        <span class="label-icon">👤</span>
+                        Username
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           placeholder="Enter your username" 
+                           required 
+                           autocomplete="username">
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">
+                        <span class="label-icon">🔒</span>
+                        Password
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           placeholder="Enter your password" 
+                           required 
+                           autocomplete="current-password">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-btn auth-btn-primary">
+                    <span>Sign In</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>Don't have an account?</p>
+                <a href="{% url 'create_account' %}" class="auth-link">
+                    Create Account <span>→</span>
+                </a>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- SIGNUP PAGE -->
+        <div class="auth-card">
+            <!-- Logo Section -->
+            <div class="auth-logo">
+                <img src="{% static 'base/images/logo.svg' %}" alt="TaskMaster Logo">
+                <h1>TaskMaster</h1>
+            </div>
+
+            <!-- Header -->
+            <div class="auth-header">
+                <h2>Create Account 🚀</h2>
+                <p>Start organizing your tasks today</p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <!-- Messages -->
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span class="alert-icon">
+                        {% if message.tags == 'error' %}⚠️{% else %}✓{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+
+                <!-- Username Field -->
+                <div class="form-group">
+                    <label for="username">
+                        <span class="label-icon">👤</span>
+                        Username
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           placeholder="Choose a username" 
+                           required 
+                           autocomplete="username">
+                </div>
+
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">
+                        <span class="label-icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           id="email" 
+                           placeholder="Enter your email" 
+                           required 
+                           autocomplete="email">
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">
+                        <span class="label-icon">🔒</span>
+                        Password
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           placeholder="Create a password" 
+                           required 
+                           autocomplete="new-password">
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div class="form-group">
+                    <label for="confirmpassword">
+                        <span class="label-icon">🔐</span>
+                        Confirm Password
+                    </label>
+                    <input type="password" 
+                           name="confirmpassword" 
+                           id="confirmpassword" 
+                           placeholder="Confirm your password" 
+                           required 
+                           autocomplete="new-password">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="auth-btn auth-btn-primary">
+                    <span>Create Account</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-footer">
+                <p>Already have an account?</p>
+                <a href="{% url 'loginpage' %}" class="auth-link">
+                    Sign In <span>→</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
-
-    <form action="" method="post" class="form-div">
-        {% csrf_token %}
-      <label for="username">Username:</label>
-      <input type="text" name="username" placeholder="Please enter your username..." required id="username">
-
-        <label for="password">Password:</label>
-        <input type="password" name="password" placeholder="Enter your password..."required id="password" class="password">
-  
-    <div class="sigupbtn-div">
-        <button type="submit" >login</button>
-    </div>
-    
-      
-    </form>
-    <div>
-      <p>if you haven't signed up</p>
-      <a href="{% url 'create_account' %}">sign up</a>
-    </div>
-  </div>
-</div>
-    {% else %}
-    <div id="signupModal" class="modal">
-
-  <div class="signup-div">
-    <div class="header-div">
-      <h1>REGISTER</h1>
-    </div>
-
-    <form action="" method="post" class="form-div">
-        {% csrf_token %}
-
-        {% for message in messages %}
-          {% if message.tags == 'success' %}
-            <p style="color: green;">{{ message }}</p>
-          {% else %}
-            <p style="color: red;">{{ message }}</p>
-          {% endif %}
-        {% endfor %}
-      <label for="username">Username:</label>
-      <input type="text" name="username" placeholder="Please enter your username..." required id="username">
-
-     
-        <label for="email">Email:</label>
-        <input type="email" name="email" placeholder="Please enter your email..."required id="email">
-      
-
-      
-        <label for="password">Password:</label>
-        <input type="password" name="password" placeholder="Enter your password..."required id="password" class="password2">
-    
-      
-
-        <label for="confirmpassword">Confirm your password:</label>
-        <input type="password" name="confirmpassword" placeholder="Please confirm your password..."required id="confirmpassword">
-        
-            
-    <div class="sigupbtn-div">
-        <button type="submit" >Signup</button>
-    </div>
-      
-    </form>
-    <div class="notsign">
-      <p>if you have already signed up</p>
-      <a href="{% url 'loginpage' %}">login</a>
-    </div>
-  </div>
-</div>
-   {% endif %}
-
 </body>
 {% endblock content %}

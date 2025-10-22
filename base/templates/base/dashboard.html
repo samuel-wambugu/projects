@@ -1,4 +1,5 @@
 {% extends 'main.html' %}
+{% load static %}
 
 {% block content %}
 <body style="background: #f5f7fa; min-height: 100vh; padding: 20px;">
@@ -6,10 +7,14 @@
         <!-- Header -->
         <div style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                <h1 style="color: #2c3e50; margin: 0;">📊 Dashboard</h1>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <img src="{% static 'base/images/logo.svg' %}" alt="TaskMaster Logo" style="width: 48px; height: 48px; animation: logoFloat 3s ease-in-out infinite;">
+                    <h1 style="color: #2c3e50; margin: 0;">📊 Dashboard</h1>
+                </div>
                 <div style="display: flex; gap: 12px;">
                     <a href="{% url 'userpage' %}" class="btn btn-primary">📝 My Tasks</a>
                     <a href="{% url 'create_task' %}" class="btn btn-success">➕ New Task</a>
+                    <a href="{% url 'logoutpage' %}" class="btn btn-danger">🚪 Logout</a>
                 </div>
             </div>
         </div>
